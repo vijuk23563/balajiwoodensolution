@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Portal – Balaji Wooden Solutions</title>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --brown:#3b1f0a;--mid:#6b3a1f;--gold:#c8902a;--cream:#fdf6ec;
+      --white:#fff;--green:#2e7d32;--red:#c62828;--orange:#e65100;
+      --blue:#1565c0;--purple:#6a1b9a;--gray:#f5f5f5;--border:#e0e0e0;
+      --text:#1e1208;--muted:#757575;
+      --sh:0 2px 12px rgba(0,0,0,.08);--sh2:0 8px 32px rgba(0,0,0,.15);
+      --r:10px;--r2:16px;
+    }
+    body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f0f2f5;color:var(--text);min-height:100vh}
+
+    /* ===== LOGIN ===== */
+    #loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(135deg,var(--brown) 0%,var(--mid) 55%,#a0622a 100%)}
+    .lc{background:var(--white);border-radius:24px;padding:52px 44px;width:100%;max-width:420px;
+      box-shadow:0 24px 64px rgba(0,0,0,.35);text-align:center}
+    .lc-icon{width:76px;height:76px;background:var(--gold);border-radius:20px;
+      display:flex;align-items:center;justify-content:center;font-size:2.4rem;margin:0 auto 20px}
+    .lc h1{font-size:1.55rem;color:var(--brown);font-weight:800;margin-bottom:4px}
+    .lc>p{font-size:.9rem;color:var(--muted);margin-bottom:32px}
+    .lg{text-align:left;margin-bottom:18px}
+    .lg label{display:block;font-size:.85rem;font-weight:700;color:var(--brown);margin-bottom:6px}
+    .lg input{width:100%;padding:13px 16px;border:2px solid var(--border);border-radius:var(--r);
+      font-size:.95rem;outline:none;background:var(--gray);transition:.2s}
+    .lg input:focus{border-color:var(--gold);background:var(--white)}
+    .lbtn{width:100%;padding:15px;background:var(--gold);color:var(--white);border:none;
+      border-radius:50px;font-size:1rem;font-weight:700;cursor:pointer;transition:.2s;margin-top:6px}
+    .lbtn:hover{background:var(--mid);transform:translateY(-1px)}
+    .lerr{color:var(--red);font-size:.84rem;margin-top:12px;display:none;
+      background:#ffebee;padding:10px 14px;border-radius:8px;border-left:3px solid var(--red)}
+
+    /* ===== LAYOUT ===== */
+    #dashboard{display:none}
+    .layout{display:flex;min-height:100vh}
+
+    /* Sidebar */
+    .sb{width:256px;flex-shrink:0;background:var(--brown);display:flex;flex-direction:column;
+      position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto;transition:.3s}
+    .sb-brand{padding:22px 18px;border-bottom:1px solid rgba(255,255,255,.1)}
+    .sb-logo{display:flex;align-items:center;gap:11px;margin-bottom:4px}
+    .sb-icon{width:38px;height:38px;background:var(--gold);border-radius:9px;
+      display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0}
+    .sb-brand h2{font-size:.92rem;color:#fff;font-weight:700;line-height:1.2}
+    .sb-brand span{font-size:.68rem;color:rgba(255,255,255,.45)}
+    .sb-nav{padding:14px 10px;flex:1}
+    .sb-label{font-size:.66rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;
+      color:rgba(255,255,255,.3);padding:12px 10px 5px}
+    .ni{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:9px;
+      color:rgba(255,255,255,.65);font-size:.88rem;font-weight:500;cursor:pointer;
+      transition:.18s;margin-bottom:1px;position:relative}
+    .ni:hover{background:rgba(255,255,255,.1);color:#fff}
+    .ni.active{background:var(--gold);color:#fff}
+    .ni-icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0}
+    .nbadge{margin-left:auto;background:var(--red);color:#fff;font-size:.65rem;font-weight:700;
+      padding:2px 7px;border-radius:50px;min-width:20px;text-align:center}
+    .nbadge.g{background:var(--green)}
+    .sb-foot{padding:14px 10px;border-top:1px solid rgba(255,255,255,.08)}
+    .lout{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:9px;
+      color:rgba(255,255,255,.55);font-size:.87rem;cursor:pointer;transition:.18s}
+    .lout:hover{background:rgba(255,0,0,.15);color:#ff6b6b}
+
+    /* Main */
+    .main{margin-left:256px;flex:1;min-width:0}
+    .topbar{background:var(--white);padding:15px 26px;display:flex;align-items:center;
+      justify-content:space-between;box-shadow:0 1px 4px rgba(0,0,0,.07);
+      position:sticky;top:0;z-index:50}
+    .topbar h1{font-size:1.2rem;font-weight:800;color:var(--brown)}
+    .tb-right{display:flex;align-items:center;gap:12px}
+    .tb-date{font-size:.8rem;color:var(--muted)}
+    .ab{background:var(--gold);color:#fff;padding:5px 14px;border-radius:50px;font-size:.78rem;font-weight:700}
+    .rfbtn{background:var(--gray);border:1px solid var(--border);padding:7px 15px;
+      border-radius:8px;font-size:.83rem;cursor:pointer;transition:.18s;display:flex;align-items:center;gap:5px}
+    .rfbtn:hover{background:var(--gold);color:#fff;border-color:var(--gold)}
+    .content{padding:24px}
+
+    /* ===== STATS ===== */
+    .sg{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+    .sc{background:var(--white);border-radius:var(--r);padding:20px 18px;box-shadow:var(--sh);
+      display:flex;align-items:center;gap:14px;border-left:4px solid transparent;transition:.2s}
+    .sc:hover{transform:translateY(-2px);box-shadow:var(--sh2)}
+    .sc.b{border-left-color:var(--gold)}.sc.d{border-left-color:var(--blue)}
+    .sc.p{border-left-color:var(--orange)}.sc.c{border-left-color:var(--green)}
+    .sc.t{border-left-color:var(--purple)}
+    .si{width:46px;height:46px;border-radius:11px;display:flex;align-items:center;
+      justify-content:center;font-size:1.35rem;flex-shrink:0}
+    .sc.b .si{background:rgba(200,144,42,.12)}.sc.d .si{background:rgba(21,101,192,.1)}
+    .sc.p .si{background:rgba(230,81,0,.1)}.sc.c .si{background:rgba(46,125,50,.1)}
+    .sc.t .si{background:rgba(106,27,154,.1)}
+    .si-info h3{font-size:1.75rem;font-weight:800;color:var(--text);line-height:1}
+    .si-info p{font-size:.78rem;color:var(--muted);margin-top:2px}
+
+    /* ===== TABS ===== */
+    .tab-bar{display:flex;gap:3px;margin-bottom:18px;background:var(--white);padding:5px;
+      border-radius:var(--r);box-shadow:var(--sh);width:fit-content}
+    .tbtn{padding:9px 20px;border-radius:7px;border:none;background:transparent;
+      color:var(--muted);font-size:.88rem;font-weight:500;cursor:pointer;transition:.18s;
+      display:flex;align-items:center;gap:7px}
+    .tbtn.active{background:var(--gold);color:#fff;font-weight:700}
+    .tbtn:hover:not(.active){background:var(--gray);color:var(--text)}
+
+    /* ===== TOOLBAR ===== */
+    .toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+    .sbox{display:flex;align-items:center;gap:8px;background:var(--white);
+      border:1px solid var(--border);border-radius:8px;padding:8px 13px;flex:1;max-width:300px}
+    .sbox input{border:none;outline:none;font-size:.88rem;width:100%;background:transparent}
+    .fsel{padding:8px 13px;border:1px solid var(--border);border-radius:8px;font-size:.86rem;
+      background:var(--white);color:var(--text);outline:none;cursor:pointer}
+    .ebtn{background:var(--green);color:#fff;padding:8px 16px;border-radius:8px;border:none;
+      font-size:.84rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;transition:.18s}
+    .ebtn:hover{background:#1b5e20;transform:translateY(-1px)}
+    .abtn{background:var(--gold);color:#fff;padding:8px 16px;border-radius:8px;border:none;
+      font-size:.84rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;transition:.18s}
+    .abtn:hover{background:var(--mid);transform:translateY(-1px)}
+    .pbtn{background:var(--blue);color:#fff;padding:8px 16px;border-radius:8px;border:none;
+      font-size:.84rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;transition:.18s}
+    .pbtn:hover{background:#0d47a1;transform:translateY(-1px)}
+
+    /* ===== TABLE ===== */
+    .tcard{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+    .twrap{overflow-x:auto}
+    table{width:100%;border-collapse:collapse;min-width:700px}
+    thead tr{background:#fafafa}
+    thead th{padding:11px 14px;text-align:left;font-size:.74rem;font-weight:700;
+      color:var(--muted);text-transform:uppercase;letter-spacing:.5px;
+      border-bottom:2px solid var(--border);white-space:nowrap}
+    tbody tr{border-bottom:1px solid var(--border);transition:background .12s}
+    tbody tr:hover{background:#fffbf5}
+    tbody tr:last-child{border-bottom:none}
+    td{padding:12px 14px;font-size:.86rem;color:var(--text);vertical-align:middle}
+    .tn{font-weight:700;color:var(--brown)}
+    .tid{font-family:monospace;font-size:.72rem;color:var(--muted)}
+
+    /* ===== BADGES ===== */
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:50px;
+      font-size:.72rem;font-weight:700;white-space:nowrap}
+    .bp{background:#fff3e0;color:var(--orange)}
+    .bc{background:#e8f5e9;color:var(--green)}
+    .bx{background:#ffebee;color:var(--red)}
+    .bn{background:#e3f2fd;color:var(--blue)}
+    .bi{background:#f3e5f5;color:var(--purple)}
+    .bd{background:#e8f5e9;color:var(--green)}
+
+    /* ===== ACTION BTNS ===== */
+    .acts{display:flex;gap:4px;flex-wrap:nowrap}
+    .act{padding:4px 9px;border-radius:6px;font-size:.72rem;font-weight:700;
+      cursor:pointer;border:none;transition:.12s;white-space:nowrap}
+    .a-ok{background:#e8f5e9;color:var(--green)}.a-ok:hover{background:var(--green);color:#fff}
+    .a-ip{background:#f3e5f5;color:var(--purple)}.a-ip:hover{background:var(--purple);color:#fff}
+    .a-dn{background:#e3f2fd;color:var(--blue)}.a-dn:hover{background:var(--blue);color:#fff}
+    .a-cx{background:#ffebee;color:var(--red)}.a-cx:hover{background:var(--red);color:#fff}
+    .a-wa{background:#e8f5e9;color:#25d366}.a-wa:hover{background:#25d366;color:#fff}
+    .a-ed{background:#fff8e1;color:#f57f17}.a-ed:hover{background:#f57f17;color:#fff}
+    .a-dl{background:#fce4ec;color:#c2185b}.a-dl:hover{background:#c2185b;color:#fff}
+    .a-vw{background:#e8eaf6;color:#3949ab}.a-vw:hover{background:#3949ab;color:#fff}
+
+    /* ===== EMPTY / LOADING ===== */
+    .empty{text-align:center;padding:56px 20px;color:var(--muted)}
+    .empty .ei{font-size:3rem;margin-bottom:10px}
+    .empty h3{font-size:1.05rem;color:var(--text);margin-bottom:5px}
+    .loading{display:flex;align-items:center;justify-content:center;gap:9px;
+      padding:40px;color:var(--muted);font-size:.88rem}
+    .spin{width:20px;height:20px;border:3px solid var(--border);border-top-color:var(--gold);
+      border-radius:50%;animation:sp .7s linear infinite}
+    @keyframes sp{to{transform:rotate(360deg)}}
+
+    /* ===== MODAL ===== */
+    .ov{position:fixed;inset:0;background:rgba(0,0,0,.52);z-index:1000;
+      display:none;align-items:center;justify-content:center;padding:20px}
+    .ov.open{display:flex}
+    .modal{background:var(--white);border-radius:var(--r2);padding:32px;width:100%;
+      max-width:580px;box-shadow:0 24px 64px rgba(0,0,0,.3);max-height:92vh;overflow-y:auto}
+    .modal h2{font-size:1.15rem;color:var(--brown);margin-bottom:22px;font-weight:800;
+      display:flex;align-items:center;gap:8px;border-bottom:2px solid var(--cream);padding-bottom:14px}
+    .mfg{margin-bottom:16px}
+    .mfg label{display:block;font-size:.8rem;font-weight:700;color:var(--muted);
+      text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+    .mfg input,.mfg select,.mfg textarea{width:100%;padding:11px 14px;border:2px solid var(--border);
+      border-radius:8px;font-size:.9rem;font-family:inherit;outline:none;
+      background:var(--gray);transition:.18s}
+    .mfg input:focus,.mfg select:focus,.mfg textarea:focus{border-color:var(--gold);background:var(--white)}
+    .mfg textarea{resize:vertical;min-height:80px}
+    .mfg p{font-size:.9rem;color:var(--text);padding:9px 14px;background:var(--gray);
+      border-radius:8px;line-height:1.6}
+    .mr{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .mbtns{display:flex;gap:10px;margin-top:22px;padding-top:18px;border-top:2px solid var(--cream)}
+    .mok{flex:1;padding:12px;background:var(--gold);color:#fff;border:none;border-radius:8px;
+      font-size:.92rem;font-weight:700;cursor:pointer;transition:.18s}
+    .mok:hover{background:var(--mid)}
+    .mcl{padding:12px 22px;border:2px solid var(--border);border-radius:8px;background:transparent;
+      font-size:.92rem;font-weight:600;cursor:pointer;color:var(--muted);transition:.18s}
+    .mcl:hover{background:var(--gray);color:var(--text)}
+    .mdel{padding:12px 22px;border:none;border-radius:8px;background:#ffebee;
+      font-size:.92rem;font-weight:700;cursor:pointer;color:var(--red);transition:.18s}
+    .mdel:hover{background:var(--red);color:#fff}
+
+    /* ===== TOAST ===== */
+    .toast{position:fixed;bottom:22px;right:22px;background:var(--brown);color:#fff;
+      padding:13px 20px;border-radius:var(--r);box-shadow:var(--sh2);font-size:.88rem;
+      font-weight:600;z-index:9999;transform:translateY(80px);opacity:0;transition:all .35s ease;
+      display:flex;align-items:center;gap:8px;max-width:340px}
+    .toast.show{transform:translateY(0);opacity:1}
+    .toast.ok{background:var(--green)}.toast.er{background:var(--red)}
+
+    /* ===== DETAIL CARD ===== */
+    .det-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 24px}
+    .det-row{padding:9px 0;border-bottom:1px solid var(--border)}
+    .det-row:last-child{border-bottom:none}
+    .det-row label{font-size:.72rem;font-weight:700;color:var(--muted);
+      text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:2px}
+    .det-row p{font-size:.9rem;color:var(--text)}
+
+    /* ===== CHART BARS ===== */
+    .chart-wrap{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);
+      padding:22px;margin-bottom:24px}
+    .chart-title{font-size:.92rem;font-weight:700;color:var(--brown);margin-bottom:16px}
+    .bars{display:flex;align-items:flex-end;gap:8px;height:100px}
+    .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+    .bar{width:100%;background:var(--gold);border-radius:4px 4px 0 0;transition:height .6s ease;
+      min-height:4px;cursor:pointer}
+    .bar:hover{background:var(--mid)}
+    .bar-label{font-size:.65rem;color:var(--muted);font-weight:600;white-space:nowrap}
+    .bar-val{font-size:.7rem;color:var(--brown);font-weight:700}
+
+    /* ===== NOTES ===== */
+    .note-badge{display:inline-block;background:#fff8e1;color:#f57f17;
+      border-radius:50px;font-size:.7rem;font-weight:700;padding:2px 8px;margin-left:5px}
+
+    /* ===== STATUS TIMELINE ===== */
+    .timeline{display:flex;flex-direction:column;gap:0}
+    .tl-item{display:flex;gap:14px;position:relative}
+    .tl-item:not(:last-child)::before{content:'';position:absolute;left:15px;top:32px;
+      bottom:-8px;width:2px;background:var(--border)}
+    .tl-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;
+      justify-content:center;font-size:.9rem;flex-shrink:0;z-index:1}
+    .tl-dot.ok{background:#e8f5e9;border:2px solid var(--green)}
+    .tl-dot.pend{background:#fff3e0;border:2px solid var(--orange)}
+    .tl-dot.done{background:#e3f2fd;border:2px solid var(--blue)}
+    .tl-info{padding:6px 0 16px}
+    .tl-info h4{font-size:.86rem;font-weight:700;color:var(--brown)}
+    .tl-info p{font-size:.78rem;color:var(--muted);margin-top:1px}
+
+    /* ===== RESPONSIVE ===== */
+    @media(max-width:900px){
+      .sb{width:220px}.main{margin-left:220px}
+      .sg{grid-template-columns:1fr 1fr}
+    }
+    @media(max-width:640px){
+      .sb{transform:translateX(-100%)}.main{margin-left:0}
+      .sg{grid-template-columns:1fr 1fr}
+    }
+
+    /* Print */
+    @media print{
+      .sb,.topbar,.toolbar,.acts,.tab-bar{display:none!important}
+      .main{margin-left:0}
+      .tcard{box-shadow:none;border:1px solid #ddd}
+    }
+
+    /* ===== GALLERY MANAGEMENT ===== */
+    .gcard{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);
+      overflow:hidden;transition:.2s;position:relative;cursor:pointer}
+    .gcard:hover{transform:translateY(-3px);box-shadow:var(--sh2)}
+    .gcard-img{width:100%;height:170px;object-fit:cover;display:block;background:#f0f0f0}
+    .gcard-img-placeholder{width:100%;height:170px;background:linear-gradient(135deg,var(--brown),var(--gold));
+      display:flex;align-items:center;justify-content:center;font-size:2.5rem}
+    .gcard-body{padding:12px 14px}
+    .gcard-title{font-size:.9rem;font-weight:700;color:var(--brown);margin-bottom:3px;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .gcard-cat{font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;
+      letter-spacing:.5px;margin-bottom:6px}
+    .gcard-desc{font-size:.78rem;color:var(--muted);white-space:nowrap;overflow:hidden;
+      text-overflow:ellipsis;margin-bottom:8px}
+    .gcard-footer{display:flex;align-items:center;justify-content:space-between;gap:6px}
+    .gcard-actions{display:flex;gap:5px}
+    .home-tag{background:#e8f5e9;color:var(--green);font-size:.68rem;font-weight:700;
+      padding:2px 7px;border-radius:50px}
+    .order-tag{background:#f3e5f5;color:var(--purple);font-size:.68rem;font-weight:700;
+      padding:2px 7px;border-radius:50px}
+    .gstat{background:var(--white);border-radius:8px;padding:10px 16px;
+      display:flex;align-items:center;gap:8px;box-shadow:var(--sh);font-size:.83rem;font-weight:600;color:var(--brown)}
+    .gstat span:first-child{font-size:1.1rem}
+  </style>
+</head>
+<body>
+
+<!-- ========== LOGIN ========== -->
+<div id="loginScreen">
+  <div class="lc">
+    <div class="lc-icon">🪵</div>
+    <h1>Admin Portal</h1>
+    <p>Balaji Wooden Solutions — Booking Database</p>
+    <div class="lg">
+      <label>Username</label>
+      <input type="text" id="aUser" placeholder="admin" autocomplete="username" />
+    </div>
+    <div class="lg">
+      <label>Password</label>
+      <input type="password" id="aPass" placeholder="••••••••" autocomplete="current-password" />
+    </div>
+    <button class="lbtn" onclick="doLogin()">🔐 Login to Admin Portal</button>
+    <div class="lerr" id="lErr">❌ Wrong username or password</div>
+    <p style="margin-top:18px;font-size:.73rem;color:#bbb;">Username: <b>admin</b> &nbsp;|&nbsp; Password: <b>balaji2026</b></p>
+  </div>
+</div>
+
+<!-- ========== DASHBOARD ========== -->
+<div id="dashboard">
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sb">
+    <div class="sb-brand">
+      <div class="sb-logo">
+        <div class="sb-icon">🪵</div>
+        <div>
+          <h2>Balaji Wooden</h2>
+          <span>Admin Portal</span>
+        </div>
+      </div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-label">Dashboard</div>
+      <div class="ni active" onclick="gotoTab('overview')"><span class="ni-icon">📊</span>Overview</div>
+      <div class="ni" onclick="gotoTab('bookings')"><span class="ni-icon">📅</span>Bookings<span class="nbadge" id="bBadge">0</span></div>
+      <div class="ni" onclick="gotoTab('designs')"><span class="ni-icon">🎨</span>Design Requests<span class="nbadge g" id="dBadge">0</span></div>
+      <div class="ni" onclick="gotoTab('gallery')"><span class="ni-icon">🖼️</span>Gallery Photos<span class="nbadge" id="gBadge" style="background:var(--purple)">0</span></div>
+      <div class="sb-label">Manage</div>
+      <div class="ni" onclick="openAddBooking()"><span class="ni-icon">➕</span>Add Booking</div>
+      <div class="ni" onclick="openAddDesign()"><span class="ni-icon">✏️</span>Add Design Req</div>
+      <div class="sb-label">System</div>
+      <div class="ni" onclick="window.open('firebase-setup.html','_blank')"><span class="ni-icon">🔥</span>Go Online (Firebase)</div>
+      <div class="ni" onclick="window.open('index.html','_blank')"><span class="ni-icon">🌐</span>View Website</div>
+      <div class="ni" onclick="window.open('booking.html','_blank')"><span class="ni-icon">📝</span>Booking Form</div>
+      <div class="ni" onclick="clearAllData()"><span class="ni-icon">🗑️</span>Clear All Data</div>
+    </nav>
+    <div class="sb-foot">
+      <div class="lout" onclick="doLogout()"><span>🚪</span> Logout</div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <h1 id="pgTitle">📊 Overview</h1>
+      <div class="tb-right">
+        <span class="tb-date" id="tDate"></span>
+        <span class="ab">👤 Admin</span>
+        <button class="rfbtn" onclick="loadAll()">🔄 Refresh</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ===== OVERVIEW ===== -->
+      <div id="tab-overview">
+        <!-- Stats -->
+        <div class="sg">
+          <div class="sc b"><div class="si">📅</div><div class="si-info"><h3 id="st-tb">0</h3><p>Total Bookings</p></div></div>
+          <div class="sc d"><div class="si">🎨</div><div class="si-info"><h3 id="st-td">0</h3><p>Design Requests</p></div></div>
+          <div class="sc p"><div class="si">⏳</div><div class="si-info"><h3 id="st-pn">0</h3><p>Pending</p></div></div>
+          <div class="sc c"><div class="si">✅</div><div class="si-info"><h3 id="st-cf">0</h3><p>Confirmed</p></div></div>
+        </div>
+        <div class="sg" style="grid-template-columns:repeat(3,1fr)">
+          <div class="sc t"><div class="si">🛋️</div><div class="si-info"><h3 id="st-fn">0</h3><p>Furniture Orders</p></div></div>
+          <div class="sc b"><div class="si">🚪</div><div class="si-info"><h3 id="st-dr">0</h3><p>Door Orders</p></div></div>
+          <div class="sc c"><div class="si">💰</div><div class="si-info"><h3 id="st-to">₹0</h3><p>Est. Revenue</p></div></div>
+        </div>
+
+        <!-- Weekly chart -->
+        <div class="chart-wrap">
+          <div class="chart-title">📈 Bookings This Week</div>
+          <div class="bars" id="weekChart"></div>
+        </div>
+
+        <!-- Status breakdown -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
+          <div class="tcard" style="padding:20px">
+            <div class="chart-title">Booking Status Breakdown</div>
+            <div id="bStatusChart"></div>
+          </div>
+          <div class="tcard" style="padding:20px">
+            <div class="chart-title">Design Request Status</div>
+            <div id="dStatusChart"></div>
+          </div>
+        </div>
+
+        <!-- Recent bookings -->
+        <div class="tcard" style="margin-bottom:20px">
+          <div style="padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+            <h3 style="font-size:.95rem;font-weight:700;color:var(--brown)">📅 Recent Bookings</h3>
+            <button class="tbtn active" style="padding:6px 13px;font-size:.8rem" onclick="gotoTab('bookings')">View All →</button>
+          </div>
+          <div class="twrap"><table>
+            <thead><tr><th>Name</th><th>Phone</th><th>Service</th><th>Date</th><th>Time</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="ov-bdy"></tbody>
+          </table></div>
+        </div>
+
+        <!-- Recent designs -->
+        <div class="tcard">
+          <div style="padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+            <h3 style="font-size:.95rem;font-weight:700;color:var(--brown)">🎨 Recent Design Requests</h3>
+            <button class="tbtn active" style="padding:6px 13px;font-size:.8rem" onclick="gotoTab('designs')">View All →</button>
+          </div>
+          <div class="twrap"><table>
+            <thead><tr><th>Name</th><th>Phone</th><th>Item</th><th>Wood</th><th>Budget</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="ov-ddy"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ===== BOOKINGS TAB ===== -->
+      <div id="tab-bookings" style="display:none">
+        <div class="toolbar">
+          <div class="sbox"><span>🔍</span><input id="bSrch" placeholder="Search name, phone, service…" oninput="renderBookings()"/></div>
+          <select class="fsel" id="bFilt" onchange="renderBookings()">
+            <option value="all">All Status</option>
+            <option value="pending">⏳ Pending</option>
+            <option value="confirmed">✅ Confirmed</option>
+            <option value="inprogress">🔨 In Progress</option>
+            <option value="completed">🎉 Completed</option>
+            <option value="cancelled">❌ Cancelled</option>
+          </select>
+          <select class="fsel" id="bSvcFilt" onchange="renderBookings()">
+            <option value="all">All Services</option>
+            <option>Custom Furniture</option>
+            <option>Doors &amp; Windows</option>
+            <option>Interior Woodwork</option>
+            <option>Office Furniture</option>
+            <option>Repair &amp; Restoration</option>
+            <option>Custom Design Consultation</option>
+            <option>Home Visit &amp; Measurement</option>
+          </select>
+          <button class="abtn" onclick="openAddBooking()">➕ Add Booking</button>
+          <button class="ebtn" onclick="exportCSV('bookings')">⬇️ CSV</button>
+          <button class="pbtn" onclick="window.print()">🖨️ Print</button>
+        </div>
+        <div class="tcard">
+          <div class="twrap"><table>
+            <thead><tr>
+              <th>#</th><th>Name</th><th>Phone</th><th>Service</th>
+              <th>Date</th><th>Time</th><th>Status</th><th>Notes</th><th>Received</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="bBody"><tr><td colspan="10"><div class="loading"><div class="spin"></div>Loading…</div></td></tr></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ===== DESIGNS TAB ===== -->
+      <div id="tab-designs" style="display:none">
+        <div class="toolbar">
+          <div class="sbox"><span>🔍</span><input id="dSrch" placeholder="Search name, item, wood…" oninput="renderDesigns()"/></div>
+          <select class="fsel" id="dFilt" onchange="renderDesigns()">
+            <option value="all">All Status</option>
+            <option value="new">🆕 New</option>
+            <option value="inprogress">🔨 In Progress</option>
+            <option value="completed">✅ Completed</option>
+            <option value="cancelled">❌ Cancelled</option>
+          </select>
+          <button class="abtn" onclick="openAddDesign()">➕ Add Design Req</button>
+          <button class="ebtn" onclick="exportCSV('designs')">⬇️ CSV</button>
+          <button class="pbtn" onclick="window.print()">🖨️ Print</button>
+        </div>
+        <div class="tcard">
+          <div class="twrap"><table>
+            <thead><tr>
+              <th>#</th><th>Name</th><th>Phone</th><th>Item</th>
+              <th>Wood</th><th>Budget</th><th>Timeline</th><th>Status</th><th>Notes</th><th>Received</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="dBody"><tr><td colspan="11"><div class="loading"><div class="spin"></div>Loading…</div></td></tr></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ===== GALLERY TAB ===== -->
+      <div id="tab-gallery" style="display:none">
+
+        <div class="toolbar">
+          <div class="sbox"><span>🔍</span><input id="gSrch" placeholder="Search title or category…" oninput="renderGallery()"/></div>
+          <select class="fsel" id="gCatFilt" onchange="renderGallery()">
+            <option value="all">All Categories</option>
+            <option value="furniture">Furniture</option>
+            <option value="doors">Doors &amp; Windows</option>
+            <option value="interior">Interior</option>
+            <option value="office">Office</option>
+            <option value="custom">Custom Designs</option>
+          </select>
+          <select class="fsel" id="gSortFilt" onchange="renderGallery()">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="title">By Title A–Z</option>
+          </select>
+          <button class="abtn" onclick="openAddPhoto()">📷 Add Photo</button>
+          <button class="ebtn" onclick="exportGalleryJSON()">⬇️ Export</button>
+        </div>
+
+        <!-- Stats bar -->
+        <div id="gStatsBar" style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:18px"></div>
+
+        <!-- Gallery grid -->
+        <div id="gGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px"></div>
+
+        <!-- Empty state -->
+        <div id="gEmpty" style="display:none">
+          <div class="empty"><div class="ei">🖼️</div><h3>No photos yet</h3>
+          <p>Click "📷 Add Photo" to add your first gallery image.</p></div>
+        </div>
+
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /layout -->
+</div><!-- /dashboard -->
+
+<!-- ===== ADD / EDIT BOOKING MODAL ===== -->
+<div class="ov" id="bModal">
+  <div class="modal">
+    <h2 id="bModalTitle">➕ Add Booking</h2>
+    <input type="hidden" id="bEditId" />
+    <div class="mr">
+      <div class="mfg"><label>Full Name *</label><input id="bName" placeholder="Customer name"/></div>
+      <div class="mfg"><label>Phone *</label><input id="bPhone" placeholder="+91 XXXXX XXXXX"/></div>
+    </div>
+    <div class="mfg"><label>Email</label><input id="bEmail" placeholder="email@example.com"/></div>
+    <div class="mfg"><label>Service *</label>
+      <select id="bSvc">
+        <option value="">-- Select service --</option>
+        <option>Custom Furniture</option><option>Doors &amp; Windows</option>
+        <option>Interior Woodwork</option><option>Office Furniture</option>
+        <option>Repair &amp; Restoration</option><option>Custom Design Consultation</option>
+        <option>Home Visit &amp; Measurement</option><option>Other / General Enquiry</option>
+      </select>
+    </div>
+    <div class="mr">
+      <div class="mfg"><label>Preferred Date *</label><input type="date" id="bDate"/></div>
+      <div class="mfg"><label>Time Slot *</label>
+        <select id="bTime">
+          <option value="">-- Select time --</option>
+          <option>9:00 AM</option><option>10:00 AM</option><option>11:00 AM</option>
+          <option>12:00 PM</option><option>2:00 PM</option><option>3:00 PM</option>
+          <option>4:00 PM</option><option>6:00 PM</option><option>7:00 PM</option>
+        </select>
+      </div>
+    </div>
+    <div class="mfg"><label>Status</label>
+      <select id="bStatus">
+        <option value="pending">⏳ Pending</option>
+        <option value="confirmed">✅ Confirmed</option>
+        <option value="inprogress">🔨 In Progress</option>
+        <option value="completed">🎉 Completed</option>
+        <option value="cancelled">❌ Cancelled</option>
+      </select>
+    </div>
+    <div class="mfg"><label>Visit Address</label><textarea id="bAddr" rows="2" placeholder="Customer address for visit"></textarea></div>
+    <div class="mfg"><label>Admin Notes</label><textarea id="bNotes" rows="2" placeholder="Internal notes (not visible to customer)"></textarea></div>
+    <div class="mbtns">
+      <button class="mdel" id="bDelBtn" onclick="deleteBooking()" style="display:none">🗑️ Delete</button>
+      <button class="mcl" onclick="closeModal('bModal')">Cancel</button>
+      <button class="mok" onclick="saveBooking()">💾 Save Booking</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ADD / EDIT DESIGN MODAL ===== -->
+<div class="ov" id="dModal">
+  <div class="modal">
+    <h2 id="dModalTitle">➕ Add Design Request</h2>
+    <input type="hidden" id="dEditId" />
+    <div class="mr">
+      <div class="mfg"><label>Full Name *</label><input id="dName" placeholder="Customer name"/></div>
+      <div class="mfg"><label>Phone *</label><input id="dPhone" placeholder="+91 XXXXX XXXXX"/></div>
+    </div>
+    <div class="mfg"><label>Email</label><input id="dEmail" placeholder="email@example.com"/></div>
+    <div class="mfg"><label>Furniture Item *</label>
+      <select id="dItem">
+        <option value="">-- Select item --</option>
+        <option>Bed (Double / King / Queen)</option><option>Wardrobe / Almirah</option>
+        <option>Sofa Set</option><option>TV Unit</option><option>Dining Table &amp; Chairs</option>
+        <option>Modular Kitchen</option><option>Wooden Door</option><option>Wall Panelling</option>
+        <option>Office Desk</option><option>Temple / Pooja Unit</option><option>Other</option>
+      </select>
+    </div>
+    <div class="mr">
+      <div class="mfg"><label>Wood Type *</label>
+        <select id="dWood">
+          <option value="">-- Select wood --</option>
+          <option>Teak</option><option>Rosewood</option><option>Sheesham</option>
+          <option>Pine</option><option>Mango Wood</option><option>Plywood / MDF</option>
+        </select>
+      </div>
+      <div class="mfg"><label>Budget</label><input id="dBudget" placeholder="e.g. ₹50,000"/></div>
+    </div>
+    <div class="mfg"><label>Timeline</label>
+      <select id="dTimeline">
+        <option value="">-- Select --</option>
+        <option>Within 2 weeks</option><option>Within 1 month</option>
+        <option>2–3 months</option><option>3–6 months</option><option>Flexible</option>
+      </select>
+    </div>
+    <div class="mfg"><label>Status</label>
+      <select id="dStatus">
+        <option value="new">🆕 New</option>
+        <option value="inprogress">🔨 In Progress</option>
+        <option value="completed">✅ Completed</option>
+        <option value="cancelled">❌ Cancelled</option>
+      </select>
+    </div>
+    <div class="mfg"><label>Description</label><textarea id="dDesc" rows="3" placeholder="Design details, dimensions, style preferences…"></textarea></div>
+    <div class="mfg"><label>Admin Notes</label><textarea id="dNotes" rows="2" placeholder="Internal notes (not visible to customer)"></textarea></div>
+    <div class="mbtns">
+      <button class="mdel" id="dDelBtn" onclick="deleteDesign()" style="display:none">🗑️ Delete</button>
+      <button class="mcl" onclick="closeModal('dModal')">Cancel</button>
+      <button class="mok" onclick="saveDesign()">💾 Save Request</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DETAIL VIEW MODAL ===== -->
+<div class="ov" id="viewModal">
+  <div class="modal" style="max-width:620px">
+    <h2 id="viewTitle">📋 Details</h2>
+    <div id="viewBody"></div>
+    <div class="mbtns">
+      <button class="mcl" onclick="closeModal('viewModal')">✕ Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ADD / EDIT PHOTO MODAL ===== -->
+<div class="ov" id="gModal">
+  <div class="modal" style="max-width:640px">
+    <h2 id="gModalTitle">📷 Add Photo</h2>
+    <input type="hidden" id="gEditId"/>
+
+    <div id="gPreviewWrap" style="margin-bottom:18px;border-radius:12px;overflow:hidden;background:#f5f5f5;
+         border:2px dashed #e0e0e0;min-height:180px;display:flex;align-items:center;justify-content:center;position:relative">
+      <img id="gPreviewImg" src="" alt="" style="width:100%;max-height:260px;object-fit:cover;display:none;border-radius:10px"/>
+      <div id="gPreviewPlaceholder" style="text-align:center;color:#aaa;padding:30px">
+        <div style="font-size:2.5rem;margin-bottom:8px">🖼️</div>
+        <p style="font-size:.85rem">Photo preview will appear here</p>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:6px;margin-bottom:16px">
+      <button id="srcUrlBtn" class="tbtn active" onclick="switchSrc('url')" style="padding:8px 16px;font-size:.84rem">🔗 Paste URL</button>
+      <button id="srcFileBtn" class="tbtn" onclick="switchSrc('file')" style="padding:8px 16px;font-size:.84rem">📁 Upload File</button>
+    </div>
+
+    <div id="srcUrlPanel" class="mfg">
+      <label>Image URL <span style="color:var(--gold)">*</span></label>
+      <input id="gUrl" placeholder="https://images.unsplash.com/… or any image link" oninput="previewFromUrl()"/>
+      <p style="font-size:.76rem;color:#aaa;margin-top:4px">Paste any image URL — Unsplash, Google Drive (direct link), your own hosting, etc.</p>
+    </div>
+
+    <div id="srcFilePanel" class="mfg" style="display:none">
+      <label>Upload from Computer</label>
+      <label id="fileDropZone" style="display:flex;flex-direction:column;align-items:center;justify-content:center;
+             padding:28px;border:2px dashed #e0e0e0;border-radius:10px;cursor:pointer;background:#fafafa;
+             gap:6px;text-align:center" ondragover="event.preventDefault()" ondrop="handleFileDrop(event)">
+        <span style="font-size:2rem">📂</span>
+        <span style="font-size:.88rem;color:#555;font-weight:600">Click to choose or drag &amp; drop</span>
+        <span style="font-size:.76rem;color:#aaa">JPG, PNG, WEBP — max 5MB</span>
+        <input type="file" id="gFile" accept="image/*" style="display:none" onchange="previewFromFile()"/>
+      </label>
+      <p id="fileNameLabel" style="font-size:.78rem;color:var(--green);margin-top:6px;display:none"></p>
+    </div>
+
+    <div class="mr">
+      <div class="mfg">
+        <label>Title <span style="color:var(--gold)">*</span></label>
+        <input id="gTitle" placeholder="e.g. King Size Teak Bed"/>
+      </div>
+      <div class="mfg">
+        <label>Category <span style="color:var(--gold)">*</span></label>
+        <select id="gCat">
+          <option value="">-- Select category --</option>
+          <option value="furniture">🛋️ Furniture</option>
+          <option value="doors">🚪 Doors &amp; Windows</option>
+          <option value="interior">🏠 Interior</option>
+          <option value="office">💼 Office</option>
+          <option value="custom">🎨 Custom Designs</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="mfg">
+      <label>Description</label>
+      <input id="gDesc" placeholder="e.g. Handcrafted teak wood with carved headboard"/>
+    </div>
+
+    <div class="mr">
+      <div class="mfg">
+        <label>Material / Wood</label>
+        <input id="gMaterial" placeholder="e.g. Teak, Rosewood, Sheesham"/>
+      </div>
+      <div class="mfg">
+        <label>Show on Homepage?</label>
+        <select id="gHomepage">
+          <option value="yes">✅ Yes — show on homepage</option>
+          <option value="no">❌ No — gallery only</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="mfg">
+      <label>Display Order <span style="font-size:.75rem;color:#aaa">(lower number = shown first)</span></label>
+      <input id="gOrder" type="number" placeholder="1" min="1" style="max-width:120px"/>
+    </div>
+
+    <div class="mbtns">
+      <button class="mdel" id="gDelBtn" onclick="deletePhoto()" style="display:none">🗑️ Delete Photo</button>
+      <button class="mcl" onclick="closeModal('gModal')">Cancel</button>
+      <button class="mok" onclick="savePhoto()">💾 Save Photo</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase + Config -->
+<script src="js/firebase-config.js"></script>
+<script>
+// ================================================================
+//  BALAJI WOODEN SOLUTIONS — ADMIN PORTAL
+//  localStorage + Firebase real-time dual mode
+// ================================================================
+// ================================================================
+//  BALAJI WOODEN SOLUTIONS — ADMIN PORTAL
+//  Self-contained localStorage database. Works 100% offline.
+// ================================================================
+
+const ADMIN_USER = 'admin';
+const ADMIN_PASS = 'balaji2026';
+const B_KEY = 'bws_bookings';
+const D_KEY = 'bws_designs';
+
+// ---- AUTH ----
+function doLogin(){
+  const u=val('aUser'), p=val('aPass');
+  if(u===ADMIN_USER && p===ADMIN_PASS){
+    id('loginScreen').style.display='none';
+    id('dashboard').style.display='block';
+    sessionStorage.setItem('bws_auth','1');
+    initDashboard();
+  } else { id('lErr').style.display='block'; }
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter' && id('loginScreen').style.display!=='none') doLogin();
+});
+function doLogout(){sessionStorage.removeItem('bws_auth');location.reload();}
+if(sessionStorage.getItem('bws_auth')){
+  id('loginScreen').style.display='none';
+  id('dashboard').style.display='block';
+  document.addEventListener('DOMContentLoaded',initDashboard);
+}
+
+// ---- DATA LAYER ----
+function getBookings(){ try{return JSON.parse(localStorage.getItem(B_KEY)||'[]')}catch{return[]} }
+function getDesigns(){  try{return JSON.parse(localStorage.getItem(D_KEY)||'[]')}catch{return[]} }
+function setBookings(d){ localStorage.setItem(B_KEY,JSON.stringify(d)) }
+function setDesigns(d){  localStorage.setItem(D_KEY,JSON.stringify(d)) }
+function genId(){ return 'BWS-'+Date.now()+'-'+Math.random().toString(36).slice(2,6).toUpperCase() }
+
+// ---- INIT ----
+function initDashboard(){
+  id('tDate').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+
+  // Connection status banner
+  setTimeout(()=>{
+    const isOnline = typeof fbOnline !== 'undefined' && fbOnline;
+    const existing = document.getElementById('connBar');
+    if(!existing){
+      const b = document.createElement('div');
+      b.id = 'connBar';
+      b.style.cssText = `padding:7px 18px;font-size:.8rem;font-weight:600;text-align:center;
+        background:${isOnline?'#e8f5e9':'#fff8e1'};
+        color:${isOnline?'#2e7d32':'#e65100'};
+        border-bottom:2px solid ${isOnline?'#a5d6a7':'#ffe082'}`;
+      b.innerHTML = isOnline
+        ? '🌐 <b>Online Mode</b> — Bookings are saving to Firebase &amp; visible from any device!'
+        : '💾 <b>Offline / Local Mode</b> — Data saves in this browser only. <b>Set up Firebase below to go online.</b>';
+      document.querySelector('.main').prepend(b);
+    }
+
+    // Subscribe to real-time Firebase listeners (or fallback to localStorage)
+    if(typeof listenBookings === 'function'){
+      listenBookings(data=>{ setBookings(data); refreshUI(); });
+      listenDesigns(data=>{  setDesigns(data);  refreshUI(); });
+    } else {
+      refreshUI();
+    }
+  }, 600);
+
+  seedDemoData();
+  refreshUI();
+}
+
+function refreshUI(){
+  updateStats();
+  renderBookings();
+  renderDesigns();
+  renderRecentBookings();
+  renderRecentDesigns();
+  renderChart();
+  renderStatusCharts();
+}
+function loadAll(){ refreshUI(); }
+
+// ---- SEED DEMO DATA (only if empty) ----
+function seedDemoData(){
+  if(getBookings().length>0) return;
+  const demo=[
+    {id:genId(),name:'Rajesh Kumar',phone:'9876543210',email:'rajesh@gmail.com',service:'Custom Furniture',date:'2026-10-05',time:'10:00 AM',address:'Kondapur, Hyderabad',notes:'Needs sofa set + coffee table',status:'confirmed',createdAt:Date.now()-86400000*2},
+    {id:genId(),name:'Sunita Patel', phone:'9988776655',email:'',service:'Interior Woodwork',date:'2026-10-07',time:'3:00 PM', address:'Gachibowli, Hyderabad',notes:'Full living room',status:'pending',  createdAt:Date.now()-86400000},
+    {id:genId(),name:'Arjun Mehta',  phone:'9112233445',email:'',service:'Doors & Windows',  date:'2026-10-09',time:'11:00 AM',address:'Madhapur, Hyderabad', notes:'2 main doors + 4 interior',status:'inprogress',createdAt:Date.now()-3600000*5},
+    {id:genId(),name:'Priya Sharma', phone:'9090909090',email:'',service:'Office Furniture',  date:'2026-10-12',time:'2:00 PM', address:'Hitech City',          notes:'',status:'pending',  createdAt:Date.now()-3600000*2},
+    {id:genId(),name:'Vikram Nair',  phone:'8080808080',email:'',service:'Repair & Restoration',date:'2026-10-03',time:'9:00 AM',address:'Jubilee Hills',       notes:'Antique cabinet repair',status:'completed',createdAt:Date.now()-86400000*4},
+  ];
+  setBookings(demo);
+
+  const ddemo=[
+    {id:genId(),name:'Kavya Reddy',  phone:'9191919191',email:'',item:'Bed (Double / King / Queen)',wood:'Teak',    budget:'₹85,000',timeline:'Within 1 month',  description:'King bed with hydraulic storage',notes:'Prefers dark finish',status:'new',       createdAt:Date.now()-3600000*3},
+    {id:genId(),name:'Suresh Babu',  phone:'9292929292',email:'',item:'Temple / Pooja Unit',       wood:'Rosewood', budget:'₹45,000',timeline:'2–3 months',     description:'Traditional carved mandir',    notes:'Visit scheduled',    status:'inprogress',createdAt:Date.now()-86400000*3},
+    {id:genId(),name:'Meena Iyer',   phone:'9393939393',email:'',item:'Wardrobe / Almirah',        wood:'Sheesham', budget:'₹60,000',timeline:'Within 1 month',  description:'4-door wardrobe with mirror',  notes:'',                   status:'new',       createdAt:Date.now()-86400000},
+  ];
+  setDesigns(ddemo);
+  loadAll();
+}
+
+// ---- STATS ----
+function updateStats(){
+  const B=getBookings(), D=getDesigns();
+  const pending   = B.filter(b=>b.status==='pending').length   + D.filter(d=>d.status==='new').length;
+  const confirmed = B.filter(b=>b.status==='confirmed').length + D.filter(d=>d.status==='completed').length;
+  const furniture = B.filter(b=>b.service==='Custom Furniture').length + D.filter(d=>d.item&&d.item.toLowerCase().includes('sofa')||d.item&&d.item.toLowerCase().includes('bed')||d.item&&d.item.toLowerCase().includes('wardrobe')).length;
+  const doors     = B.filter(b=>b.service==='Doors & Windows').length   + D.filter(d=>d.item&&d.item.toLowerCase().includes('door')).length;
+  const revenue   = D.reduce((s,d)=>{const n=parseInt((d.budget||'0').replace(/[^\d]/g,''));return s+(isNaN(n)?0:n);},0);
+
+  setText('st-tb', B.length);
+  setText('st-td', D.length);
+  setText('st-pn', pending);
+  setText('st-cf', confirmed);
+  setText('st-fn', furniture);
+  setText('st-dr', doors);
+  setText('st-to', '₹'+revenue.toLocaleString('en-IN'));
+  setText('bBadge', B.length);
+  setText('dBadge', D.length);
+}
+
+// ---- CHART ----
+function renderChart(){
+  const B=getBookings();
+  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const counts=Array(7).fill(0);
+  const now=new Date(); now.setHours(0,0,0,0);
+  B.forEach(b=>{
+    const d=new Date(b.createdAt||Date.now());
+    const diff=Math.floor((now-d)/86400000);
+    if(diff>=0&&diff<7) counts[6-diff]++;
+  });
+  const max=Math.max(...counts,1);
+  const labels=Array.from({length:7},(_,i)=>{const d=new Date(now);d.setDate(d.getDate()-(6-i));return days[d.getDay()];});
+  id('weekChart').innerHTML=counts.map((c,i)=>`
+    <div class="bar-col">
+      <div class="bar-val">${c}</div>
+      <div class="bar" style="height:${Math.max(4,Math.round(c/max*88))}px" title="${labels[i]}: ${c} bookings"></div>
+      <div class="bar-label">${labels[i]}</div>
+    </div>`).join('');
+}
+
+function renderStatusCharts(){
+  const B=getBookings(), D=getDesigns();
+  const bMap={pending:0,confirmed:0,inprogress:0,completed:0,cancelled:0};
+  B.forEach(b=>bMap[b.status]=(bMap[b.status]||0)+1);
+  const dMap={new:0,inprogress:0,completed:0,cancelled:0};
+  D.forEach(d=>dMap[d.status]=(dMap[d.status]||0)+1);
+
+  const bColors={pending:'#e65100',confirmed:'#2e7d32',inprogress:'#6a1b9a',completed:'#1565c0',cancelled:'#c62828'};
+  const dColors={new:'#1565c0',inprogress:'#6a1b9a',completed:'#2e7d32',cancelled:'#c62828'};
+  const bl=Object.keys(bMap).filter(k=>bMap[k]>0);
+  const dl=Object.keys(dMap).filter(k=>dMap[k]>0);
+  const total=B.length||1, dtotal=D.length||1;
+
+  id('bStatusChart').innerHTML=bl.length?bl.map(k=>`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <div style="flex:1;background:#f5f5f5;border-radius:50px;height:10px;overflow:hidden">
+        <div style="width:${Math.round(bMap[k]/total*100)}%;background:${bColors[k]};height:100%;border-radius:50px"></div>
+      </div>
+      <span style="font-size:.78rem;font-weight:700;min-width:80px;color:${bColors[k]}">${k} (${bMap[k]})</span>
+    </div>`).join(''):'<p style="font-size:.85rem;color:#aaa">No data</p>';
+
+  id('dStatusChart').innerHTML=dl.length?dl.map(k=>`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <div style="flex:1;background:#f5f5f5;border-radius:50px;height:10px;overflow:hidden">
+        <div style="width:${Math.round(dMap[k]/dtotal*100)}%;background:${dColors[k]};height:100%;border-radius:50px"></div>
+      </div>
+      <span style="font-size:.78rem;font-weight:700;min-width:80px;color:${dColors[k]}">${k} (${dMap[k]})</span>
+    </div>`).join(''):'<p style="font-size:.85rem;color:#aaa">No data</p>';
+}
+
+// ---- RENDER BOOKINGS ----
+function renderBookings(){
+  const srch=(val('bSrch')||'').toLowerCase();
+  const filt=val('bFilt')||'all';
+  const svc =val('bSvcFilt')||'all';
+  let data=getBookings().filter(b=>{
+    const ms=!srch||(b.name||'').toLowerCase().includes(srch)||(b.phone||'').includes(srch)||(b.service||'').toLowerCase().includes(srch);
+    const mf=filt==='all'||b.status===filt;
+    const mv=svc==='all'||b.service===svc;
+    return ms&&mf&&mv;
+  });
+  data.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  const tbody=id('bBody');
+  if(!data.length){tbody.innerHTML=`<tr><td colspan="10"><div class="empty"><div class="ei">📅</div><h3>No bookings found</h3><p>Try a different filter or add a booking manually.</p></div></td></tr>`;return;}
+  tbody.innerHTML=data.map((b,i)=>`
+    <tr>
+      <td class="tid">${i+1}</td>
+      <td class="tn">${esc(b.name)}</td>
+      <td><a href="tel:${esc(b.phone)}" style="color:var(--brown);font-weight:600">${esc(b.phone)}</a></td>
+      <td>${esc(b.service)}</td>
+      <td style="white-space:nowrap">${fmtDate(b.date)}</td>
+      <td style="white-space:nowrap">${esc(b.time)}</td>
+      <td>${statusBadge(b.status)}</td>
+      <td>${b.notes?`<span class="note-badge">📝</span>`:''}</td>
+      <td style="white-space:nowrap;font-size:.75rem;color:var(--muted)">${fmtTs(b.createdAt)}</td>
+      <td>
+        <div class="acts">
+          <button class="act a-ok"  onclick="chgBStatus('${b.id}','confirmed')"   title="Confirm">✅</button>
+          <button class="act a-ip"  onclick="chgBStatus('${b.id}','inprogress')"  title="In Progress">🔨</button>
+          <button class="act a-dn"  onclick="chgBStatus('${b.id}','completed')"   title="Complete">🎉</button>
+          <button class="act a-cx"  onclick="chgBStatus('${b.id}','cancelled')"   title="Cancel">❌</button>
+          <button class="act a-wa"  onclick="waContact('${b.phone}','${esc(b.name)}','booking')" title="WhatsApp">💬</button>
+          <button class="act a-ed"  onclick="editBooking('${b.id}')"              title="Edit">✏️</button>
+          <button class="act a-vw"  onclick="viewBooking('${b.id}')"              title="View">👁️</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function renderRecentBookings(){
+  const data=getBookings().sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).slice(0,5);
+  id('ov-bdy').innerHTML=data.length?data.map(b=>`
+    <tr>
+      <td class="tn">${esc(b.name)}</td>
+      <td>${esc(b.phone)}</td>
+      <td>${esc(b.service)}</td>
+      <td>${fmtDate(b.date)}</td>
+      <td>${esc(b.time)}</td>
+      <td>${statusBadge(b.status)}</td>
+      <td><button class="act a-ok" onclick="chgBStatus('${b.id}','confirmed')">✅</button>
+          <button class="act a-ed" onclick="editBooking('${b.id}')">✏️</button></td>
+    </tr>`).join('')
+    :`<tr><td colspan="7"><div class="empty" style="padding:28px"><p>No bookings yet</p></div></td></tr>`;
+}
+
+// ---- RENDER DESIGNS ----
+function renderDesigns(){
+  const srch=(val('dSrch')||'').toLowerCase();
+  const filt=val('dFilt')||'all';
+  let data=getDesigns().filter(d=>{
+    const ms=!srch||(d.name||'').toLowerCase().includes(srch)||(d.phone||'').includes(srch)||(d.item||'').toLowerCase().includes(srch)||(d.wood||'').toLowerCase().includes(srch);
+    const mf=filt==='all'||d.status===filt;
+    return ms&&mf;
+  });
+  data.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  const tbody=id('dBody');
+  if(!data.length){tbody.innerHTML=`<tr><td colspan="11"><div class="empty"><div class="ei">🎨</div><h3>No design requests found</h3><p>Requests submitted on the website will appear here automatically.</p></div></td></tr>`;return;}
+  tbody.innerHTML=data.map((d,i)=>`
+    <tr>
+      <td class="tid">${i+1}</td>
+      <td class="tn">${esc(d.name)}</td>
+      <td><a href="tel:${esc(d.phone)}" style="color:var(--brown);font-weight:600">${esc(d.phone)}</a></td>
+      <td>${esc(d.item)}</td>
+      <td>${esc(d.wood)}</td>
+      <td style="font-weight:600;color:var(--green)">${esc(d.budget||'—')}</td>
+      <td>${esc(d.timeline||'—')}</td>
+      <td>${dStatusBadge(d.status)}</td>
+      <td>${d.notes?`<span class="note-badge">📝</span>`:''}</td>
+      <td style="white-space:nowrap;font-size:.75rem;color:var(--muted)">${fmtTs(d.createdAt)}</td>
+      <td>
+        <div class="acts">
+          <button class="act a-ip" onclick="chgDStatus('${d.id}','inprogress')"  title="In Progress">🔨</button>
+          <button class="act a-dn" onclick="chgDStatus('${d.id}','completed')"   title="Complete">✅</button>
+          <button class="act a-cx" onclick="chgDStatus('${d.id}','cancelled')"   title="Cancel">❌</button>
+          <button class="act a-wa" onclick="waContact('${d.phone}','${esc(d.name)}','design')" title="WhatsApp">💬</button>
+          <button class="act a-ed" onclick="editDesign('${d.id}')"               title="Edit">✏️</button>
+          <button class="act a-vw" onclick="viewDesign('${d.id}')"               title="View">👁️</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function renderRecentDesigns(){
+  const data=getDesigns().sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).slice(0,5);
+  id('ov-ddy').innerHTML=data.length?data.map(d=>`
+    <tr>
+      <td class="tn">${esc(d.name)}</td>
+      <td>${esc(d.phone)}</td>
+      <td>${esc(d.item)}</td>
+      <td>${esc(d.wood)}</td>
+      <td style="font-weight:600;color:var(--green)">${esc(d.budget||'—')}</td>
+      <td>${dStatusBadge(d.status)}</td>
+      <td><button class="act a-ip" onclick="chgDStatus('${d.id}','inprogress')">🔨</button>
+          <button class="act a-ed" onclick="editDesign('${d.id}')">✏️</button></td>
+    </tr>`).join('')
+    :`<tr><td colspan="7"><div class="empty" style="padding:28px"><p>No requests yet</p></div></td></tr>`;
+}
+
+// ---- STATUS CHANGES ----
+function chgBStatus(id_,status){
+  // Update locally
+  const B=getBookings(); const i=B.findIndex(b=>b.id===id_||b.firestoreId===id_);
+  if(i>=0){ B[i].status=status; B[i].updatedAt=Date.now(); setBookings(B); }
+  // Update Firebase if available
+  if(typeof updateBookingStatus==='function') updateBookingStatus(id_,status).catch(()=>{});
+  refreshUI();
+  toast('Booking marked as '+status,'ok');
+}
+function chgDStatus(id_,status){
+  const D=getDesigns(); const i=D.findIndex(d=>d.id===id_||d.firestoreId===id_);
+  if(i>=0){ D[i].status=status; D[i].updatedAt=Date.now(); setDesigns(D); }
+  if(typeof updateDesignStatus==='function') updateDesignStatus(id_,status).catch(()=>{});
+  refreshUI();
+  toast('Design request marked as '+status,'ok');
+}
+
+// ---- ADD/EDIT BOOKING ----
+function openAddBooking(){
+  id('bModalTitle').textContent='➕ Add Booking';
+  id('bEditId').value='';
+  id('bDelBtn').style.display='none';
+  ['bName','bPhone','bEmail','bAddr','bNotes'].forEach(f=>id(f).value='');
+  id('bSvc').value=''; id('bTime').value=''; id('bStatus').value='pending';
+  id('bDate').value=new Date().toISOString().split('T')[0];
+  openModal('bModal');
+}
+function editBooking(bid){
+  const b=getBookings().find(x=>x.id===bid); if(!b)return;
+  id('bModalTitle').textContent='✏️ Edit Booking';
+  id('bEditId').value=bid;
+  id('bDelBtn').style.display='block';
+  id('bName').value=b.name||''; id('bPhone').value=b.phone||''; id('bEmail').value=b.email||'';
+  id('bSvc').value=b.service||''; id('bDate').value=b.date||''; id('bTime').value=b.time||'';
+  id('bStatus').value=b.status||'pending'; id('bAddr').value=b.address||''; id('bNotes').value=b.notes||'';
+  openModal('bModal');
+}
+function saveBooking(){
+  const name=val('bName').trim(), phone=val('bPhone').trim();
+  const svc=val('bSvc'), date=val('bDate'), time=val('bTime');
+  if(!name||!phone||!svc||!date||!time){toast('Fill all required fields (*)','er');return;}
+  const B=getBookings();
+  const editId=val('bEditId');
+  if(editId){
+    const i=B.findIndex(b=>b.id===editId);
+    if(i>=0){
+      B[i]={...B[i],name,phone,email:val('bEmail'),service:svc,date,time,
+        status:val('bStatus'),address:val('bAddr'),notes:val('bNotes'),updatedAt:Date.now()};
+      toast('Booking updated!','ok');
+    }
+  } else {
+    B.unshift({id:genId(),name,phone,email:val('bEmail'),service:svc,date,time,
+      status:val('bStatus'),address:val('bAddr'),notes:val('bNotes'),createdAt:Date.now()});
+    toast('Booking added!','ok');
+  }
+  setBookings(B); closeModal('bModal'); refreshUI();
+  // Sync new booking to Firebase if available
+  if(!editId && typeof saveBooking==='function'){
+    const newRec=B[0];
+    saveBooking({name,phone,email:val('bEmail'),service:svc,date,time,
+      address:val('bAddr'),notes:val('bNotes')}).catch(()=>{});
+  }
+}
+function deleteBooking(){
+  if(!confirm('Delete this booking? This cannot be undone.'))return;
+  const editId=val('bEditId'); if(!editId)return;
+  if(typeof deleteRecord==='function') deleteRecord('bookings',editId).catch(()=>{});
+  setBookings(getBookings().filter(b=>b.id!==editId&&b.firestoreId!==editId));
+  closeModal('bModal'); refreshUI(); toast('Booking deleted','ok');
+}
+
+// ---- ADD/EDIT DESIGN ----
+function openAddDesign(){
+  id('dModalTitle').textContent='➕ Add Design Request';
+  id('dEditId').value='';
+  id('dDelBtn').style.display='none';
+  ['dName','dPhone','dEmail','dBudget','dDesc','dNotes'].forEach(f=>id(f).value='');
+  id('dItem').value=''; id('dWood').value=''; id('dTimeline').value=''; id('dStatus').value='new';
+  openModal('dModal');
+}
+function editDesign(did){
+  const d=getDesigns().find(x=>x.id===did); if(!d)return;
+  id('dModalTitle').textContent='✏️ Edit Design Request';
+  id('dEditId').value=did;
+  id('dDelBtn').style.display='block';
+  id('dName').value=d.name||''; id('dPhone').value=d.phone||''; id('dEmail').value=d.email||'';
+  id('dItem').value=d.item||''; id('dWood').value=d.wood||''; id('dBudget').value=d.budget||'';
+  id('dTimeline').value=d.timeline||''; id('dStatus').value=d.status||'new';
+  id('dDesc').value=d.description||''; id('dNotes').value=d.notes||'';
+  openModal('dModal');
+}
+function saveDesign(){
+  const name=val('dName').trim(), phone=val('dPhone').trim();
+  const item=val('dItem'), wood=val('dWood');
+  if(!name||!phone||!item||!wood){toast('Fill all required fields (*)','er');return;}
+  const D=getDesigns();
+  const editId=val('dEditId');
+  if(editId){
+    const i=D.findIndex(d=>d.id===editId);
+    if(i>=0){
+      D[i]={...D[i],name,phone,email:val('dEmail'),item,wood,budget:val('dBudget'),
+        timeline:val('dTimeline'),status:val('dStatus'),description:val('dDesc'),
+        notes:val('dNotes'),updatedAt:Date.now()};
+      toast('Design request updated!','ok');
+    }
+  } else {
+    D.unshift({id:genId(),name,phone,email:val('dEmail'),item,wood,budget:val('dBudget'),
+      timeline:val('dTimeline'),status:val('dStatus'),description:val('dDesc'),
+      notes:val('dNotes'),createdAt:Date.now()});
+    toast('Design request added!','ok');
+  }
+  setDesigns(D); closeModal('dModal'); refreshUI();
+  if(!editId && typeof saveDesignRequest==='function'){
+    saveDesignRequest({name,phone,email:val('dEmail'),item,wood,budget:val('dBudget'),
+      timeline:val('dTimeline'),description:val('dDesc'),notes:val('dNotes')}).catch(()=>{});
+  }
+}
+function deleteDesign(){
+  if(!confirm('Delete this design request? This cannot be undone.'))return;
+  const editId=val('dEditId'); if(!editId)return;
+  if(typeof deleteRecord==='function') deleteRecord('design_requests',editId).catch(()=>{});
+  setDesigns(getDesigns().filter(d=>d.id!==editId&&d.firestoreId!==editId));
+  closeModal('dModal'); refreshUI(); toast('Request deleted','ok');
+}
+
+// ---- VIEW DETAILS ----
+function viewBooking(bid){
+  const b=getBookings().find(x=>x.id===bid); if(!b)return;
+  id('viewTitle').textContent='📅 Booking Details';
+  id('viewBody').innerHTML=`
+    <div class="det-grid">
+      ${detRow('Booking ID',b.id)}${detRow('Status',statusBadge(b.status))}
+      ${detRow('Name',b.name)}${detRow('Phone','<a href="tel:'+b.phone+'">'+b.phone+'</a>')}
+      ${detRow('Email',b.email||'—')}${detRow('Service',b.service)}
+      ${detRow('Date',fmtDate(b.date))}${detRow('Time',b.time)}
+      ${detRow('Address',b.address||'—')}${detRow('Received',fmtTs(b.createdAt))}
+    </div>
+    ${b.notes?`<div style="margin-top:16px;padding:14px;background:#fffbf5;border-radius:8px;border-left:3px solid var(--gold)"><label style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Admin Notes</label><p style="font-size:.9rem;margin-top:4px">${esc(b.notes)}</p></div>`:''}
+    <div style="display:flex;gap:8px;margin-top:18px;flex-wrap:wrap">
+      <a href="tel:${b.phone}" class="abtn" style="text-decoration:none">📞 Call</a>
+      <a href="https://wa.me/91${b.phone.replace(/\D/g,'')}" target="_blank" class="act a-wa" style="padding:8px 14px;font-size:.85rem">💬 WhatsApp</a>
+      <button class="act a-ed" style="padding:8px 14px;font-size:.85rem" onclick="closeModal('viewModal');editBooking('${b.id}')">✏️ Edit</button>
+    </div>`;
+  openModal('viewModal');
+}
+function viewDesign(did){
+  const d=getDesigns().find(x=>x.id===did); if(!d)return;
+  id('viewTitle').textContent='🎨 Design Request Details';
+  id('viewBody').innerHTML=`
+    <div class="det-grid">
+      ${detRow('Request ID',d.id)}${detRow('Status',dStatusBadge(d.status))}
+      ${detRow('Name',d.name)}${detRow('Phone','<a href="tel:'+d.phone+'">'+d.phone+'</a>')}
+      ${detRow('Email',d.email||'—')}${detRow('Item',d.item)}
+      ${detRow('Wood Type',d.wood)}${detRow('Budget',d.budget||'—')}
+      ${detRow('Timeline',d.timeline||'—')}${detRow('Received',fmtTs(d.createdAt))}
+    </div>
+    ${d.description?`<div style="margin-top:14px;padding:14px;background:#f5f5f5;border-radius:8px"><label style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Description</label><p style="font-size:.88rem;margin-top:4px;line-height:1.7">${esc(d.description)}</p></div>`:''}
+    ${d.notes?`<div style="margin-top:10px;padding:14px;background:#fffbf5;border-radius:8px;border-left:3px solid var(--gold)"><label style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Admin Notes</label><p style="font-size:.9rem;margin-top:4px">${esc(d.notes)}</p></div>`:''}
+    <div style="display:flex;gap:8px;margin-top:18px;flex-wrap:wrap">
+      <a href="tel:${d.phone}" class="abtn" style="text-decoration:none">📞 Call</a>
+      <a href="https://wa.me/91${d.phone.replace(/\D/g,'')}" target="_blank" class="act a-wa" style="padding:8px 14px;font-size:.85rem">💬 WhatsApp</a>
+      <button class="act a-ed" style="padding:8px 14px;font-size:.85rem" onclick="closeModal('viewModal');editDesign('${d.id}')">✏️ Edit</button>
+    </div>`;
+  openModal('viewModal');
+}
+function detRow(label,val){return`<div class="det-row"><label>${label}</label><p>${val}</p></div>`;}
+
+// ---- WHATSAPP ----
+function waContact(phone,name,type){
+  const n=phone.replace(/\D/g,'');
+  const num=n.startsWith('91')?n:'91'+n;
+  const msg=type==='booking'
+    ?`Hello ${name}! This is Balaji Wooden Solutions. We are calling to confirm your appointment booking. Please let us know if you need any changes. Thank you!`
+    :`Hello ${name}! This is Balaji Wooden Solutions. We have received your custom design request and will get back to you shortly with a detailed quote. Thank you!`;
+  window.open('https://wa.me/'+num+'?text='+encodeURIComponent(msg),'_blank');
+}
+
+// ---- EXPORT CSV ----
+function exportCSV(type){
+  const isB=type==='bookings';
+  const data=isB?getBookings():getDesigns();
+  const headers=isB
+    ?['ID','Name','Phone','Email','Service','Date','Time','Address','Status','Notes','Received']
+    :['ID','Name','Phone','Email','Item','Wood','Budget','Timeline','Description','Status','Notes','Received'];
+  const rows=data.map(r=>isB
+    ?[r.id,r.name,r.phone,r.email||'',r.service,r.date,r.time,r.address||'',r.status,r.notes||'',fmtTs(r.createdAt)]
+    :[r.id,r.name,r.phone,r.email||'',r.item,r.wood,r.budget||'',r.timeline||'',r.description||'',r.status,r.notes||'',fmtTs(r.createdAt)]
+  );
+  const csv=[headers,...rows].map(row=>row.map(v=>'"'+String(v||'').replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=`balaji-${type}-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click(); toast('CSV exported!','ok');
+}
+
+// ---- CLEAR DATA ----
+function clearAllData(){
+  if(!confirm('⚠️ This will permanently delete ALL bookings and design requests. Are you sure?'))return;
+  if(!confirm('Are you absolutely sure? This CANNOT be undone.'))return;
+  localStorage.removeItem(B_KEY); localStorage.removeItem(D_KEY);
+  loadAll(); toast('All data cleared','ok');
+}
+
+// ---- TAB NAV ----
+function gotoTab(t){
+  ['overview','bookings','designs','gallery'].forEach(x=>{
+    id('tab-'+x).style.display=x===t?'block':'none';
+  });
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(n=>{
+    if(n.textContent.trim().toLowerCase().startsWith(
+      t==='overview'?'over':t==='bookings'?'book':t==='designs'?'design':t==='gallery'?'gallery':''
+    )) n.classList.add('active');
+  });
+  const titles={overview:'📊 Overview',bookings:'📅 Bookings',designs:'🎨 Design Requests',gallery:'🖼️ Gallery Photos'};
+  id('pgTitle').textContent=titles[t]||'';
+  if(t==='gallery') renderGallery();
+}
+
+// ---- MODAL HELPERS ----
+function openModal(mid){id(mid).classList.add('open');}
+function closeModal(mid){id(mid).classList.remove('open');}
+document.addEventListener('click',e=>{
+  ['bModal','dModal','viewModal'].forEach(m=>{
+    if(e.target===id(m)) closeModal(m);
+  });
+});
+
+// ---- STATUS BADGES ----
+function statusBadge(s){
+  const m={pending:'bp ⏳ Pending',confirmed:'bc ✅ Confirmed',inprogress:'bi 🔨 In Progress',completed:'bd 🎉 Completed',cancelled:'bx ❌ Cancelled'};
+  const v=m[s]||'bp '+s; const [cls,...txt]=v.split(' ');
+  return`<span class="badge ${cls}">${txt.join(' ')}</span>`;
+}
+function dStatusBadge(s){
+  const m={new:'bn 🆕 New',inprogress:'bi 🔨 In Progress',completed:'bc ✅ Completed',cancelled:'bx ❌ Cancelled'};
+  const v=m[s]||'bn '+s; const [cls,...txt]=v.split(' ');
+  return`<span class="badge ${cls}">${txt.join(' ')}</span>`;
+}
+
+// ---- UTILS ----
+function id(x){return document.getElementById(x)}
+function val(x){return(id(x)||{}).value||''}
+function setText(x,v){const e=id(x);if(e)e.textContent=v}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function fmtDate(d){if(!d)return'—';try{return new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}catch{return d}}
+function fmtTs(ts){if(!ts)return'—';return new Date(ts).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}
+
+function toast(msg,type=''){
+  const t=id('toast');
+  t.textContent=msg; t.className='toast '+(type?'t-'+type:'')+(type==='ok'?' ok':type==='er'?' er':'');
+  // reuse existing class
+  t.className='toast'+( type==='ok'?' ok':type==='er'?' er':'');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3200);
+}
+</script>
+</body>
+</html>

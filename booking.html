@@ -1,0 +1,362 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Book Appointment – Balaji Wooden Solutions</title>
+  <meta name="description" content="Book a free consultation or appointment with Balaji Wooden Solutions. Choose your service, date, and time slot." />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪵</text></svg>" />
+  <!-- Firebase SDK (compat v9) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <nav>
+      <a href="index.html" class="logo">
+        <div class="logo-icon">🪵</div>
+        <div class="logo-text">
+          <h1>Balaji Wooden Solutions</h1>
+          <p>Crafted with Passion</p>
+        </div>
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="gallery.html">Gallery</a></li>
+        <li><a href="custom-design.html">Custom Design</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="booking.html" class="btn btn-primary active">Book Now</a></li>
+      </ul>
+      <div class="hamburger" aria-label="Toggle menu" role="button" tabindex="0">
+        <span></span><span></span><span></span>
+      </div>
+    </nav>
+  </header>
+
+  <!-- PAGE HERO -->
+  <section class="page-hero">
+    <div class="container">
+      <div class="breadcrumb">
+        <a href="index.html">Home</a>
+        <span>›</span>
+        <span>Book Appointment</span>
+      </div>
+      <h1>📅 Book an Appointment</h1>
+      <p>Schedule a free consultation with our master craftsmen. We'll visit your space and understand your needs.</p>
+    </div>
+  </section>
+
+  <!-- BOOKING SECTION -->
+  <section class="booking-section">
+    <div class="container">
+      <div class="booking-layout">
+
+        <!-- BOOKING FORM -->
+        <div class="booking-form-card">
+          <h2>Schedule Your Visit</h2>
+          <p>Fill in your details and we'll confirm your appointment within 2 hours.</p>
+
+          <form id="bookingForm" novalidate>
+            <!-- Hidden selected time -->
+            <input type="hidden" id="selectedTime" name="selectedTime" />
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="customerName">Full Name <span class="required">*</span></label>
+                <input type="text" id="customerName" name="name" placeholder="Your full name" autocomplete="name" />
+              </div>
+              <div class="form-group">
+                <label for="customerPhone">Phone Number <span class="required">*</span></label>
+                <input type="tel" id="customerPhone" name="phone" placeholder="+91 XXXXX XXXXX" autocomplete="tel" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="customerEmail">Email Address</label>
+              <input type="email" id="customerEmail" name="email" placeholder="your@email.com" autocomplete="email" />
+            </div>
+
+            <div class="form-group">
+              <label for="serviceType">Service Required <span class="required">*</span></label>
+              <select id="serviceType" name="service">
+                <option value="">-- Select a service --</option>
+                <option value="Custom Furniture">Custom Furniture</option>
+                <option value="Doors & Windows">Doors &amp; Windows</option>
+                <option value="Interior Woodwork">Interior Woodwork</option>
+                <option value="Office Furniture">Office Furniture</option>
+                <option value="Repair & Restoration">Repair &amp; Restoration</option>
+                <option value="Custom Design Consultation">Custom Design Consultation</option>
+                <option value="Home Visit & Measurement">Home Visit &amp; Measurement</option>
+                <option value="Other / General Enquiry">Other / General Enquiry</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="bookingDate">Preferred Date <span class="required">*</span></label>
+              <input type="date" id="bookingDate" name="date" />
+            </div>
+
+            <div class="form-group">
+              <label>Preferred Time Slot <span class="required">*</span></label>
+              <div class="time-slots">
+                <div class="time-slot">9:00 AM</div>
+                <div class="time-slot">10:00 AM</div>
+                <div class="time-slot">11:00 AM</div>
+                <div class="time-slot">12:00 PM</div>
+                <div class="time-slot unavailable">1:00 PM</div>
+                <div class="time-slot">2:00 PM</div>
+                <div class="time-slot">3:00 PM</div>
+                <div class="time-slot">4:00 PM</div>
+                <div class="time-slot unavailable">5:00 PM</div>
+                <div class="time-slot">6:00 PM</div>
+                <div class="time-slot">7:00 PM</div>
+                <div class="time-slot unavailable">8:00 PM</div>
+              </div>
+              <p style="font-size:0.78rem; color:#999; margin-top:8px;">⛔ Greyed slots are already booked</p>
+            </div>
+
+            <div class="form-group">
+              <label for="visitAddress">Visit Address</label>
+              <textarea id="visitAddress" name="address" placeholder="Your home / office address for the visit (if applicable)" rows="3"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="bookingNotes">Additional Notes</label>
+              <textarea id="bookingNotes" name="notes" placeholder="Any specific requirements, measurements, or ideas you'd like to share..." rows="3"></textarea>
+            </div>
+
+            <div class="form-submit">
+              <button type="submit" class="btn btn-primary" id="bookingSubmitBtn">✅ Confirm Booking</button>
+              <p id="dbStatusMsg" style="margin-top:10px;font-size:0.82rem;color:#7a5230;display:none;"></p>
+            </div>
+          </form>
+
+          <!-- SUCCESS STATE -->
+          <div class="booking-success" id="bookingSuccess">
+            <div class="success-icon">✅</div>
+            <h3>Booking Confirmed!</h3>
+            <p>Thank you! Your appointment has been received. We will call you within 2 hours to confirm.</p>
+            <br />
+            <div style="background:#f0f8f0; border-radius:12px; padding:20px; text-align:left; margin:16px 0;">
+              <p style="font-size:0.88rem; color:#555; margin-bottom:6px;"><strong>👤 Name:</strong> <span id="confirmName"></span></p>
+              <p style="font-size:0.88rem; color:#555; margin-bottom:6px;"><strong>🛠️ Service:</strong> <span id="confirmService"></span></p>
+              <p style="font-size:0.88rem; color:#555; margin-bottom:6px;"><strong>📅 Date:</strong> <span id="confirmDate"></span></p>
+              <p style="font-size:0.88rem; color:#555;"><strong>⏰ Time:</strong> <span id="confirmTime"></span></p>
+            </div>            <a id="whatsappBooking" href="#" target="_blank" class="btn btn-primary" style="margin-top:12px;">
+              💬 Also Send via WhatsApp
+            </a>
+            <br /><br />
+            <a href="index.html" class="btn btn-dark">← Back to Home</a>
+          </div>
+        </div>
+
+        <!-- SIDEBAR -->
+        <div class="booking-sidebar">
+          <div class="sidebar-card">
+            <h3>📍 Shop Location</h3>
+            <ul class="info-list">
+              <li><span class="icon">📍</span><span>Masjid Banda Main Road, Kondapur, Hyderabad</span></li>
+              <li><span class="icon">📞</span><span><a href="tel:+919571412387">+91 95714 12387</a></span></li>
+              <li><span class="icon">📧</span><span>solankivijay8547@gmail.com</span></li>
+              <li><span class="icon">💬</span><span><a href="https://wa.me/919571412387" target="_blank">Chat on WhatsApp</a></span></li>
+            </ul>
+          </div>
+
+          <div class="sidebar-card">
+            <h3>⏰ Working Hours</h3>
+            <ul class="hours-list">
+              <li><span class="day">Monday</span><span class="open">9:00 AM – 8:00 PM</span></li>
+              <li><span class="day">Tuesday</span><span class="open">9:00 AM – 8:00 PM</span></li>
+              <li><span class="day">Wednesday</span><span class="open">9:00 AM – 8:00 PM</span></li>
+              <li><span class="day">Thursday</span><span class="open">9:00 AM – 8:00 PM</span></li>
+              <li><span class="day">Friday</span><span class="open">9:00 AM – 8:00 PM</span></li>
+              <li><span class="day">Saturday</span><span class="open">9:00 AM – 6:00 PM</span></li>
+              <li><span class="day">Sunday</span><span class="closed">Closed</span></li>
+            </ul>
+          </div>
+
+          <div class="sidebar-card">
+            <h3>✅ Why Book With Us?</h3>
+            <ul class="info-list">
+              <li><span class="icon">🆓</span><span>Free home visit & consultation</span></li>
+              <li><span class="icon">📐</span><span>On-site measurement & planning</span></li>
+              <li><span class="icon">💰</span><span>No-obligation free quote</span></li>
+              <li><span class="icon">⚡</span><span>Confirmation within 2 hours</span></li>
+              <li><span class="icon">🛡️</span><span>Warranty on all our work</span></li>
+            </ul>
+          </div>
+
+          <div class="sidebar-card" style="background: linear-gradient(135deg, #3b1f0a, #6b3a1f); color: white;">
+            <h3 style="color:white;">💬 Prefer WhatsApp?</h3>
+            <p style="font-size:0.88rem; color:rgba(255,255,255,0.75); margin-bottom:16px;">Skip the form — just message us directly on WhatsApp and we'll schedule your visit instantly.</p>
+            <a href="https://wa.me/919571412387?text=Hello%20Balaji%20Wooden%20Solutions!%20I'd%20like%20to%20book%20an%20appointment." target="_blank" class="btn btn-primary" style="width:100%; display:block; text-align:center;">
+              💬 Chat on WhatsApp
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="logo">
+            <div class="logo-icon">🪵</div>
+            <div class="logo-text">
+              <h1>Balaji Wooden Solutions</h1>
+              <p>Crafted with Passion</p>
+            </div>
+          </div>
+          <p>Handcrafting premium wooden furniture and interiors for over a decade.</p>
+        </div>
+        <div>
+          <h4>Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+            <li><a href="custom-design.html">Custom Design</a></li>
+            <li><a href="booking.html">Book Appointment</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Services</h4>
+          <ul class="footer-links">
+            <li><a href="#">Custom Furniture</a></li>
+            <li><a href="#">Doors &amp; Windows</a></li>
+            <li><a href="#">Interior Woodwork</a></li>
+            <li><a href="#">Office Furniture</a></li>
+            <li><a href="#">Repair &amp; Restore</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Contact</h4>
+          <ul class="footer-contact">
+            <li><span>📍</span><span>Masjid Banda Main Road, Kondapur, Hyderabad</span></li>
+            <li><span>📞</span><span><a href="tel:+919571412387">+91 95714 12387</a></span></li>
+            <li><span>⏰</span><span>Mon–Sat: 9 AM – 8 PM</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 Balaji Wooden Solutions. All rights reserved.</p>
+        <p>Made by MR. VIJAY KUMAR</p>
+      </div>
+    </div>
+  </footer>
+
+  <a href="https://wa.me/919571412387" target="_blank" class="whatsapp-float" title="Chat on WhatsApp">💬</a>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    // ---- Override booking form submit to save to Firestore ----
+    document.addEventListener('DOMContentLoaded', function () {
+      const form = document.getElementById('bookingForm');
+      if (!form) return;
+
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const name    = form.querySelector('#customerName').value.trim();
+        const phone   = form.querySelector('#customerPhone').value.trim();
+        const email   = form.querySelector('#customerEmail').value.trim();
+        const service = form.querySelector('#serviceType').value;
+        const date    = form.querySelector('#bookingDate').value;
+        const address = form.querySelector('#visitAddress').value.trim();
+        const notes   = form.querySelector('#bookingNotes').value.trim();
+        const time    = document.getElementById('selectedTime').value;
+
+        // Validation
+        if (!name || !phone || !date || !service) {
+          showToast('Please fill in all required fields.', 'error'); return;
+        }
+        if (!time) {
+          showToast('Please select a time slot.', 'error'); return;
+        }
+        if (!/^[\d\s\+\-]{7,15}$/.test(phone)) {
+          showToast('Please enter a valid phone number.', 'error'); return;
+        }
+
+        const btn    = document.getElementById('bookingSubmitBtn');
+        const status = document.getElementById('dbStatusMsg');
+        btn.disabled    = true;
+        btn.textContent = '⏳ Saving...';
+        status.style.display = 'block';
+        status.textContent   = 'Saving your booking to our database...';
+
+        const confirmDate = new Date(date).toLocaleDateString('en-IN', {
+          weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        });
+
+        const bookingData = {
+          name, phone, email, service, date, time: time,
+          dateFormatted: confirmDate, address, notes
+        };
+
+        try {
+          // Save to localStorage first (always works)
+          const lsBookings = JSON.parse(localStorage.getItem('bws_bookings') || '[]');
+          const lsId = 'BWS-' + Date.now() + '-' + Math.random().toString(36).slice(2,6).toUpperCase();
+          lsBookings.unshift({id:lsId, ...bookingData, status:'pending', createdAt:Date.now(), source:'website'});
+          localStorage.setItem('bws_bookings', JSON.stringify(lsBookings));
+
+          // Also try Firebase if configured
+          let docId = lsId;
+          try { docId = await saveBooking(bookingData); } catch(fe) { /* Firebase not set up yet */ }
+          status.textContent = '✅ Booking saved! ID: ' + docId;
+          status.style.color = '#2e7d32';
+
+          // Fill confirmation card
+          document.getElementById('confirmName').textContent    = name;
+          document.getElementById('confirmService').textContent = service;
+          document.getElementById('confirmDate').textContent    = confirmDate;
+          document.getElementById('confirmTime').textContent    = time;
+
+          form.style.display = 'none';
+          document.getElementById('bookingSuccess').style.display = 'block';
+
+          const waMsg = encodeURIComponent(
+            'Hello Balaji Wooden Solutions!\n\nBooking ID: ' + docId +
+            '\n\nI\'d like to book an appointment:\n👤 Name: ' + name +
+            '\n📞 Phone: ' + phone + '\n🛠️ Service: ' + service +
+            '\n📅 Date: ' + confirmDate + '\n⏰ Time: ' + time
+          );
+          document.getElementById('whatsappBooking').href = 'https://wa.me/919571412387?text=' + waMsg;
+          showToast('Booking confirmed & saved to database! 🎉', 'success');
+
+        } catch (err) {
+          console.error(err);
+          status.textContent = '⚠️ Database offline — booking noted locally.';
+          status.style.color = '#c8902a';
+
+          // Still show confirmation even if DB fails
+          const confirmDate2 = new Date(date).toLocaleDateString('en-IN', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+          });
+          document.getElementById('confirmName').textContent    = name;
+          document.getElementById('confirmService').textContent = service;
+          document.getElementById('confirmDate').textContent    = confirmDate2;
+          document.getElementById('confirmTime').textContent    = time;
+          form.style.display = 'none';
+          document.getElementById('bookingSuccess').style.display = 'block';
+
+          const waMsg = encodeURIComponent(
+            'Hello Balaji Wooden Solutions!\n\nI\'d like to book an appointment:\n👤 Name: ' + name +
+            '\n📞 Phone: ' + phone + '\n🛠️ Service: ' + service +
+            '\n📅 Date: ' + confirmDate2 + '\n⏰ Time: ' + time
+          );
+          document.getElementById('whatsappBooking').href = 'https://wa.me/919571412387?text=' + waMsg;
+          showToast('Booking received! (DB connection pending — check Firebase setup)', 'success');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

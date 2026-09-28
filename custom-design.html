@@ -1,0 +1,435 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Custom Wooden Design – Balaji Wooden Solutions</title>
+  <meta name="description" content="Request a custom wooden design from Balaji Wooden Solutions. Share your idea, sketch, or reference image and we'll craft it for you." />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪵</text></svg>" />
+  <!-- Firebase SDK (compat v9) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <nav>
+      <a href="index.html" class="logo">
+        <div class="logo-icon">🪵</div>
+        <div class="logo-text">
+          <h1>Balaji Wooden Solutions</h1>
+          <p>Crafted with Passion</p>
+        </div>
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="gallery.html">Gallery</a></li>
+        <li><a href="custom-design.html" class="active">Custom Design</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="booking.html" class="btn btn-primary">Book Now</a></li>
+      </ul>
+      <div class="hamburger" aria-label="Toggle menu" role="button" tabindex="0">
+        <span></span><span></span><span></span>
+      </div>
+    </nav>
+  </header>
+
+  <!-- PAGE HERO -->
+  <section class="page-hero">
+    <div class="container">
+      <div class="breadcrumb">
+        <a href="index.html">Home</a>
+        <span>›</span>
+        <span>Custom Design</span>
+      </div>
+      <h1>🎨 Custom Wooden Design</h1>
+      <p>Have a unique idea in mind? Share it with us — sketch, photo, or description — and we'll craft it to perfection.</p>
+    </div>
+  </section>
+
+  <!-- CUSTOM DESIGN SECTION -->
+  <section class="custom-design-section">
+    <div class="container">
+      <div class="custom-layout">
+
+        <!-- DESIGN FORM -->
+        <div class="design-form-card">
+          <h2>Tell Us Your Vision</h2>
+          <p>The more details you share, the better we can understand your dream piece. All fields marked with * are required.</p>
+
+          <form id="customDesignForm" novalidate>
+            <!-- Hidden selected wood -->
+            <input type="hidden" id="selectedWood" name="woodType" />
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="designName">Your Name <span class="required">*</span></label>
+                <input type="text" id="designName" name="name" placeholder="Full name" autocomplete="name" />
+              </div>
+              <div class="form-group">
+                <label for="designPhone">Phone Number <span class="required">*</span></label>
+                <input type="tel" id="designPhone" name="phone" placeholder="+91 XXXXX XXXXX" autocomplete="tel" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="designEmail">Email Address</label>
+              <input type="email" id="designEmail" name="email" placeholder="your@email.com" autocomplete="email" />
+            </div>
+
+            <div class="form-group">
+              <label for="furnitureType">What Do You Need? <span class="required">*</span></label>
+              <select id="furnitureType" name="item">
+                <option value="">-- Select furniture / item type --</option>
+                <optgroup label="Bedroom">
+                  <option value="Bed (Double / King / Queen)">Bed (Double / King / Queen)</option>
+                  <option value="Wardrobe / Almirah">Wardrobe / Almirah</option>
+                  <option value="Dressing Table">Dressing Table</option>
+                  <option value="Bedside Table">Bedside Table</option>
+                </optgroup>
+                <optgroup label="Living Room">
+                  <option value="Sofa Set">Sofa Set</option>
+                  <option value="TV Unit / Entertainment Cabinet">TV Unit / Entertainment Cabinet</option>
+                  <option value="Coffee Table">Coffee Table</option>
+                  <option value="Bookshelf / Display Unit">Bookshelf / Display Unit</option>
+                  <option value="Wall Panel / Cladding">Wall Panel / Cladding</option>
+                </optgroup>
+                <optgroup label="Dining">
+                  <option value="Dining Table &amp; Chairs">Dining Table &amp; Chairs</option>
+                  <option value="Kitchen Cabinet / Modular Kitchen">Kitchen Cabinet / Modular Kitchen</option>
+                  <option value="Bar Unit / Wine Rack">Bar Unit / Wine Rack</option>
+                </optgroup>
+                <optgroup label="Office">
+                  <option value="Work Desk / Study Table">Work Desk / Study Table</option>
+                  <option value="Office Chair / Seating">Office Chair / Seating</option>
+                  <option value="Filing Cabinet">Filing Cabinet</option>
+                  <option value="Conference Table">Conference Table</option>
+                  <option value="Reception Counter">Reception Counter</option>
+                </optgroup>
+                <optgroup label="Doors & Fixtures">
+                  <option value="Wooden Door (Main / Interior)">Wooden Door (Main / Interior)</option>
+                  <option value="Window Frame">Window Frame</option>
+                  <option value="Staircase / Railing">Staircase / Railing</option>
+                  <option value="False Ceiling (Wood)">False Ceiling (Wood)</option>
+                </optgroup>
+                <optgroup label="Other">
+                  <option value="Decorative / Gift Item">Decorative / Gift Item</option>
+                  <option value="Temple / Pooja Unit">Temple / Pooja Unit</option>
+                  <option value="Garden / Outdoor Furniture">Garden / Outdoor Furniture</option>
+                  <option value="Other (specify in description)">Other (specify in description)</option>
+                </optgroup>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Preferred Wood Type <span class="required">*</span></label>
+              <div class="wood-types">
+                <div class="wood-type" data-wood="teak">
+                  <div class="wt-icon">🌳</div>
+                  <div class="wt-name">Teak</div>
+                  <div class="wt-desc">Premium, durable</div>
+                </div>
+                <div class="wood-type" data-wood="rosewood">
+                  <div class="wt-icon">🪵</div>
+                  <div class="wt-name">Rosewood</div>
+                  <div class="wt-desc">Rich, dark grain</div>
+                </div>
+                <div class="wood-type" data-wood="sheesham">
+                  <div class="wt-icon">🌿</div>
+                  <div class="wt-name">Sheesham</div>
+                  <div class="wt-desc">Strong &amp; affordable</div>
+                </div>
+                <div class="wood-type" data-wood="pine">
+                  <div class="wt-icon">🌲</div>
+                  <div class="wt-name">Pine</div>
+                  <div class="wt-desc">Light, modern look</div>
+                </div>
+                <div class="wood-type" data-wood="mango">
+                  <div class="wt-icon">🥭</div>
+                  <div class="wt-name">Mango Wood</div>
+                  <div class="wt-desc">Eco-friendly</div>
+                </div>
+                <div class="wood-type" data-wood="plywood">
+                  <div class="wt-icon">📦</div>
+                  <div class="wt-name">Plywood / MDF</div>
+                  <div class="wt-desc">Budget-friendly</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Approximate Size / Dimensions</label>
+              <div class="form-row">
+                <input type="text" name="width" placeholder="Width (e.g. 6 ft)" />
+                <input type="text" name="height" placeholder="Height (e.g. 7 ft)" />
+              </div>
+              <input type="text" name="depth" placeholder="Depth / Length (e.g. 2 ft)" style="margin-top:10px;" />
+            </div>
+
+            <div class="form-group">
+              <label>Budget Range <span class="required">*</span></label>
+              <input type="range" id="budgetSlider" class="budget-slider" min="5000" max="500000" step="5000" value="50000" />
+              <div class="budget-display">
+                <span>₹5,000</span>
+                <span>Selected: <strong id="budgetValue">₹50,000</strong></span>
+                <span>₹5,00,000+</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="designDescription">Describe Your Design <span class="required">*</span></label>
+              <textarea id="designDescription" name="description" rows="5" placeholder="Tell us about your design idea — style (modern/traditional/rustic), colour, finish (polish/paint/natural), any special features, inspiration, etc. The more detail, the better!"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Reference Images / Sketches (Optional)</label>
+              <label class="file-upload" for="referenceImages">
+                <input type="file" id="referenceImages" name="images" accept="image/*" multiple />
+                <div class="upload-icon">📎</div>
+                <p id="fileLabel">Click or drag files here</p>
+                <p><strong>Upload photos, sketches, or inspiration images</strong></p>
+                <p style="font-size:0.78rem; color:#aaa;">Supported: JPG, PNG, WEBP (max 5 files)</p>
+              </label>
+            </div>
+
+            <div class="form-group">
+              <label for="deliveryTimeline">Delivery Timeline Expectation</label>
+              <select id="deliveryTimeline" name="timeline">
+                <option value="">-- How soon do you need it? --</option>
+                <option value="Within 2 weeks">Within 2 weeks (rush order)</option>
+                <option value="1 month">Within 1 month</option>
+                <option value="2-3 months">2–3 months (standard)</option>
+                <option value="3-6 months">3–6 months (no rush)</option>
+                <option value="Flexible">Flexible — quality over speed</option>
+              </select>
+            </div>
+
+            <div class="form-submit">
+              <button type="submit" class="btn btn-primary" id="designSubmitBtn">🎨 Submit Design Request</button>
+              <p id="designDbStatus" style="margin-top:10px;font-size:0.82rem;color:#7a5230;display:none;"></p>
+            </div>
+          </form>
+
+          <!-- SUCCESS STATE -->
+          <div class="booking-success" id="designSuccess" style="display:none;">
+            <div class="success-icon">🎨</div>
+            <h3>Design Request Received!</h3>
+            <p>Thank you! Our design team will review your request and contact you within 24 hours with initial ideas and a quote.</p>
+            <br />
+            <a id="whatsappDesign" href="#" target="_blank" class="btn btn-primary" style="margin-top:12px;">
+              💬 Follow Up on WhatsApp
+            </a>
+            <br /><br />
+            <a href="index.html" class="btn btn-dark">← Back to Home</a>
+          </div>
+        </div>
+
+        <!-- SIDEBAR -->
+        <div class="design-sidebar">
+          <div class="sidebar-card">
+            <h3>🪜 How It Works</h3>
+            <div class="process-steps">
+              <div class="process-step">
+                <div class="step-num">1</div>
+                <div class="step-info">
+                  <h4>Submit Your Design</h4>
+                  <p>Fill in the form with your idea, dimensions, and reference images.</p>
+                </div>
+              </div>
+              <div class="process-step">
+                <div class="step-num">2</div>
+                <div class="step-info">
+                  <h4>We Review & Consult</h4>
+                  <p>Our team reviews your request and calls you within 24 hours to discuss details.</p>
+                </div>
+              </div>
+              <div class="process-step">
+                <div class="step-num">3</div>
+                <div class="step-info">
+                  <h4>Get a Free Quote</h4>
+                  <p>We provide a detailed quote covering materials, cost, and delivery timeline.</p>
+                </div>
+              </div>
+              <div class="process-step">
+                <div class="step-num">4</div>
+                <div class="step-info">
+                  <h4>Crafting Begins</h4>
+                  <p>Once approved, our craftsmen start building your dream piece.</p>
+                </div>
+              </div>
+              <div class="process-step">
+                <div class="step-num">5</div>
+                <div class="step-info">
+                  <h4>Delivery & Installation</h4>
+                  <p>We deliver and install at your location with final touches.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sidebar-card">
+            <h3>🌳 Wood Types We Use</h3>
+            <ul class="info-list">
+              <li><span class="icon">🌳</span><span><strong>Teak</strong> – King of all woods, highly durable, weather-resistant</span></li>
+              <li><span class="icon">🪵</span><span><strong>Rosewood</strong> – Dense, beautiful dark grain, premium finish</span></li>
+              <li><span class="icon">🌿</span><span><strong>Sheesham</strong> – Strong North Indian timber, great value</span></li>
+              <li><span class="icon">🌲</span><span><strong>Pine</strong> – Light colour, suits Scandinavian/modern styles</span></li>
+              <li><span class="icon">🥭</span><span><strong>Mango Wood</strong> – Sustainable, eco-friendly, unique grain</span></li>
+              <li><span class="icon">📦</span><span><strong>Plywood / MDF</strong> – Cost-effective for modular furniture</span></li>
+            </ul>
+          </div>
+
+          <div class="sidebar-card" style="background: linear-gradient(135deg, #3b1f0a, #6b3a1f); color: white;">
+            <h3 style="color:white;">💬 Quick Quote?</h3>
+            <p style="font-size:0.88rem; color:rgba(255,255,255,0.75); margin-bottom:16px;">For a faster response, send us your idea directly on WhatsApp with a photo or description.</p>
+            <a href="https://wa.me/919571412387?text=Hello!%20I'd%20like%20to%20request%20a%20custom%20wooden%20design." target="_blank" class="btn btn-primary" style="width:100%; display:block; text-align:center;">
+              💬 WhatsApp Us
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="logo">
+            <div class="logo-icon">🪵</div>
+            <div class="logo-text">
+              <h1>Balaji Wooden Solutions</h1>
+              <p>Crafted with Passion</p>
+            </div>
+          </div>
+          <p>Handcrafting premium wooden furniture and interiors for over a decade.</p>
+        </div>
+        <div>
+          <h4>Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+            <li><a href="custom-design.html">Custom Design</a></li>
+            <li><a href="booking.html">Book Appointment</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Services</h4>
+          <ul class="footer-links">
+            <li><a href="#">Custom Furniture</a></li>
+            <li><a href="#">Doors &amp; Windows</a></li>
+            <li><a href="#">Interior Woodwork</a></li>
+            <li><a href="#">Office Furniture</a></li>
+            <li><a href="#">Repair &amp; Restore</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Contact</h4>
+          <ul class="footer-contact">
+            <li><span>📍</span><span>Masjid Banda Main Road, Kondapur, Hyderabad</span></li>
+            <li><span>📞</span><span><a href="tel:+919571412387">+91 95714 12387</a></span></li>
+            <li><span>⏰</span><span>Mon–Sat: 9 AM – 8 PM</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 Balaji Wooden Solutions. All rights reserved.</p>
+        <p>Made by MR. VIJAY KUMAR</p>
+      </div>
+    </div>
+  </footer>
+
+  <a href="https://wa.me/919571412387" target="_blank" class="whatsapp-float" title="Chat on WhatsApp">💬</a>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const form = document.getElementById('customDesignForm');
+      if (!form) return;
+
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const name     = form.querySelector('#designName').value.trim();
+        const phone    = form.querySelector('#designPhone').value.trim();
+        const email    = form.querySelector('#designEmail').value.trim();
+        const item     = form.querySelector('#furnitureType').value;
+        const desc     = form.querySelector('#designDescription').value.trim();
+        const wood     = document.getElementById('selectedWood').value;
+        const budget   = document.getElementById('budgetValue')?.textContent || 'Not specified';
+        const timeline = form.querySelector('#deliveryTimeline')?.value || '';
+
+        if (!name || !phone || !item || !desc) {
+          showToast('Please fill in all required fields.', 'error'); return;
+        }
+        if (!wood) {
+          showToast('Please select a wood type.', 'error'); return;
+        }
+        if (!/^[\d\s\+\-]{7,15}$/.test(phone)) {
+          showToast('Please enter a valid phone number.', 'error'); return;
+        }
+
+        const btn    = document.getElementById('designSubmitBtn');
+        const status = document.getElementById('designDbStatus');
+        btn.disabled    = true;
+        btn.textContent = '⏳ Saving...';
+        status.style.display = 'block';
+        status.textContent   = 'Saving your design request to our database...';
+
+        const designData = {
+          name, phone, email, item, wood, budget, timeline,
+          description: desc
+        };
+
+        try {
+          // Save to localStorage first (always works)
+          const lsDesigns = JSON.parse(localStorage.getItem('bws_designs') || '[]');
+          const lsId = 'BWS-' + Date.now() + '-' + Math.random().toString(36).slice(2,6).toUpperCase();
+          lsDesigns.unshift({id:lsId, ...designData, status:'new', createdAt:Date.now(), source:'website'});
+          localStorage.setItem('bws_designs', JSON.stringify(lsDesigns));
+
+          // Also try Firebase if configured
+          let docId = lsId;
+          try { docId = await saveDesignRequest(designData); } catch(fe) { /* Firebase not set up yet */ }
+          status.textContent = '✅ Request saved! ID: ' + docId;
+          status.style.color = '#2e7d32';
+
+          form.style.display = 'none';
+          document.getElementById('designSuccess').style.display = 'block';
+
+          const waMsg = encodeURIComponent(
+            'Hello Balaji Wooden Solutions!\n\nDesign Request ID: ' + docId +
+            '\n\n👤 Name: ' + name + '\n📞 Phone: ' + phone +
+            '\n🪑 Item: ' + item + '\n🌳 Wood: ' + wood +
+            '\n💰 Budget: ' + budget + '\n📝 Details: ' + desc
+          );
+          document.getElementById('whatsappDesign').href = 'https://wa.me/919571412387?text=' + waMsg;
+          showToast('Design request saved to database! 🎨', 'success');
+
+        } catch (err) {
+          console.error(err);
+          status.textContent = '⚠️ Database offline — request noted locally.';
+          status.style.color = '#c8902a';
+
+          form.style.display = 'none';
+          document.getElementById('designSuccess').style.display = 'block';
+
+          const waMsg = encodeURIComponent(
+            'Hello Balaji Wooden Solutions!\n\n👤 Name: ' + name +
+            '\n📞 Phone: ' + phone + '\n🪑 Item: ' + item +
+            '\n🌳 Wood: ' + wood + '\n💰 Budget: ' + budget +
+            '\n📝 Details: ' + desc
+          );
+          document.getElementById('whatsappDesign').href = 'https://wa.me/919571412387?text=' + waMsg;
+          showToast('Request received! (DB connection pending — check Firebase setup)', 'success');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
